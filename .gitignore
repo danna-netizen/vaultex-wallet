@@ -1,0 +1,10 @@
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# local notes (demo password, project refs) — not published
+CREDENCIALES.txt

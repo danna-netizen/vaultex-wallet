@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vaultex Wallet</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233d7bfd'/%3E%3Cpath d='M8 9l8 15 8-15h-4.5L16 16.5 12.5 9z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0d13;--panel:#111620;--panel2:#161c28;--panel3:#1b2231;--line:#222a3a;--line2:#2b3446;
+  --text:#e9edf4;--muted:#8b95a9;--dim:#5f6a80;--accent:#3d7bfd;--accent2:#6a9bff;
+  --green:#16c784;--red:#ea3943;--warn:#f5a524;--radius:14px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#05070b;color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:var(--accent2);text-decoration:none}
+.num{font-variant-numeric:tabular-nums}
+.up{color:var(--green)}.down{color:var(--red)}.muted{color:var(--muted)}.dim{color:var(--dim)}
+.hidden{display:none!important}
+.addr{font-family:var(--mono);font-size:12.5px;letter-spacing:-.2px}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* ---------- desktop window ---------- */
+.win{height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.titlebar{height:36px;flex:none;display:flex;align-items:center;background:#07090e;border-bottom:1px solid #161b26;-webkit-user-select:none;user-select:none}
+.titlebar .tt{display:flex;align-items:center;gap:9px;padding-left:12px;font-size:12.5px;color:var(--muted);font-weight:500}
+.titlebar .tt .lg{width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,#3d7bfd,#6a5bff);display:grid;place-items:center}
+.titlebar .menu{display:flex;gap:2px;margin-left:16px}
+.titlebar .menu span{padding:4px 9px;border-radius:5px;font-size:12.5px;color:var(--dim);cursor:default}
+.titlebar .menu span:hover{background:#ffffff0a;color:var(--muted)}
+.winctl{margin-left:auto;display:flex;height:100%}
+.winctl button{width:46px;height:100%;display:grid;place-items:center;color:var(--muted)}
+.winctl button:hover{background:#ffffff10;color:var(--text)}
+.winctl button.cl:hover{background:#e81123;color:#fff}
+.win-body{flex:1;min-height:0;overflow:auto;position:relative}
+.statusbar{height:26px;flex:none;display:flex;align-items:center;gap:16px;padding:0 12px;background:#07090e;border-top:1px solid #161b26;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden}
+.statusbar .sb-r{margin-left:auto;display:flex;gap:14px;align-items:center}
+.sim{font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:4px;background:#f5a52422;color:#f5b94c}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px #16c78430;display:inline-block;flex:none}
+
+/* ---------- auth ---------- */
+.auth{min-height:100%;display:grid;grid-template-columns:1.1fr 1fr}
+.auth-art{position:relative;overflow:hidden;background:radial-gradient(1200px 600px at 10% 10%,#16264a 0%,transparent 60%),radial-gradient(800px 500px at 90% 90%,#0f2a2a 0%,transparent 60%),#0a0d13;padding:44px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.3px}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3d7bfd,#6a5bff);display:grid;place-items:center;box-shadow:0 6px 20px #3d7bfd55;flex:none}
+.auth-art h1{font-size:40px;line-height:1.1;letter-spacing:-1px;max-width:460px;font-weight:700}
+.auth-art p.lead{color:var(--muted);margin-top:14px;max-width:420px;font-size:15px;line-height:1.6}
+.ticker-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:480px;margin-top:34px}
+.tcard{background:#ffffff08;border:1px solid #ffffff10;border-radius:12px;padding:14px}
+.tcard .row{display:flex;align-items:center;gap:8px;font-weight:600}
+.tcard .p{font-size:18px;font-weight:600;margin-top:8px}
+.auth-foot{color:var(--dim);font-size:12px;display:flex;gap:18px;flex-wrap:wrap}
+.auth-form-wrap{display:flex;align-items:center;justify-content:center;padding:40px 24px}
+.auth-card{width:100%;max-width:400px}
+.auth-card h2{font-size:26px;letter-spacing:-.5px}
+.auth-card .sub{color:var(--muted);margin:6px 0 24px;line-height:1.5}
+.field{margin-bottom:16px}
+.field>label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.input{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;outline:none;transition:border .15s,box-shadow .15s}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #3d7bfd30}
+.input.bad{border-color:#ea394399}
+.input.good{border-color:#16c78499}
+.input-wrap{position:relative}
+.input-wrap .suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.input-wrap .suffix button,.mini-btn{font-size:11px;font-weight:700;color:var(--accent2);background:#3d7bfd1c;padding:4px 8px;border-radius:6px}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);padding:4px}
+.check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;line-height:1.45}
+.check input{accent-color:var(--accent);width:15px;height:15px;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:10px;font-weight:600;transition:background .15s,transform .05s,opacity .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#2f6bf0}
+.btn-ghost{background:var(--panel2);border:1px solid var(--line2)}
+.btn-ghost:hover{background:var(--panel3)}
+.btn-red{background:var(--red);color:#fff}
+.btn-block{width:100%;padding:13px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.err{background:#ea394318;border:1px solid #ea394355;color:#ff8b92;padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:14px}
+.legal{color:var(--dim);font-size:12px;margin-top:22px;line-height:1.6;text-align:center}
+.spin{width:16px;height:16px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.strength{height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.strength i{display:block;height:100%;width:0;transition:width .2s,background .2s}
+.drop{border:1.5px dashed var(--line2);border-radius:14px;padding:28px 18px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;background:var(--panel)}
+.drop:hover,.drop.over{border-color:var(--accent);background:#3d7bfd0d}
+.drop .di{width:46px;height:46px;border-radius:12px;background:#3d7bfd1f;color:var(--accent2);display:grid;place-items:center;margin:0 auto 12px}
+.drop b{display:block;margin-bottom:4px}
+.fchip{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:12px 14px}
+.fchip .fi{width:38px;height:38px;border-radius:9px;background:#16c78420;color:var(--green);display:grid;place-items:center;flex:none}
+.fchip .fn{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fchip .fm{color:var(--muted);font-size:12px;margin-top:2px}
+.warnbox{background:#f5a52414;border:1px solid #f5a52440;color:#f5c06a;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:16px}
+.infobox{background:#3d7bfd12;border:1px solid #3d7bfd38;color:#9dbbff;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5}
+
+/* ---------- app ---------- */
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);height:100%}
+.side{border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:3px;background:#0b0e15;overflow:auto}
+.side .brand{padding:4px 10px 18px;font-size:18px}
+.nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--muted);font-weight:500;text-align:left}
+.nav:hover{background:var(--panel);color:var(--text)}
+.nav.on{background:var(--panel2);color:var(--text)}
+.nav.on svg{color:var(--accent2)}
+.nav svg{width:18px;height:18px;flex:none}
+.nav .cnt{margin-left:auto;font-size:11px;background:#f5a52422;color:#f5b94c;border-radius:10px;padding:1px 7px;font-weight:700}
+.side-sep{height:1px;background:var(--line);margin:10px 6px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.main{overflow:auto;min-width:0;position:relative}
+.top{height:62px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0a0d13ee;backdrop-filter:blur(10px);z-index:20}
+.acct{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}
+.acct:hover{border-color:var(--line2)}
+.acct .an{font-weight:600;font-size:13.5px;text-align:left}
+.acct .aa{font-size:11.5px;color:var(--muted)}
+.av{border-radius:50%;overflow:hidden;display:inline-flex;flex:none}
+.top .sp{flex:1}
+.pillbtn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:13px;font-weight:500;color:var(--muted)}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);position:relative}
+.icon-btn:hover{color:var(--text)}
+.icon-btn .pip{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid var(--panel)}
+.dropdown{position:absolute;top:46px;background:var(--panel2);border:1px solid var(--line2);border-radius:14px;box-shadow:0 20px 50px #000a;min-width:270px;z-index:50;overflow:hidden}
+.dropdown .dd-h{padding:13px 16px;border-bottom:1px solid var(--line)}
+.dropdown .dd-i{display:flex;gap:10px;align-items:center;padding:11px 16px;width:100%;text-align:left;color:var(--text)}
+.dropdown .dd-i:hover{background:var(--panel3)}
+.notif{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.notif:last-child{border-bottom:0}
+.notif .t{font-weight:600;font-size:13px}
+.notif .d{color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.4}
+.notif .w{color:var(--dim);font-size:11.5px;margin-top:4px}
+.content{padding:22px 24px 40px;max-width:1360px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{font-size:15px;font-weight:600}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2 .span2{grid-column:span 2}
+.g-form{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px;align-items:start;max-width:1100px}
+.big{font-size:36px;font-weight:700;letter-spacing:-1px;margin-top:6px}
+.lbl{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:8px}
+.chgline{margin-top:6px;font-weight:600;font-size:14px}
+.ranges{display:flex;gap:4px}
+.ranges button{padding:6px 11px;border-radius:8px;color:var(--muted);font-weight:600;font-size:12.5px}
+.ranges button.on{background:var(--panel3);color:var(--text)}
+.chart-wrap{position:relative;margin-top:14px}
+.chart-wrap canvas{width:100%;display:block}
+.tip{position:absolute;pointer-events:none;background:var(--panel3);border:1px solid var(--line2);padding:7px 10px;border-radius:8px;font-size:12px;white-space:nowrap;transform:translateX(-50%);top:0;box-shadow:0 8px 20px #0006}
+.tip b{display:block;font-size:13px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qa{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-weight:600;font-size:13px}
+.qa:hover{border-color:#3a4560;background:var(--panel3)}
+.qa .qi{width:40px;height:40px;border-radius:50%;background:#3d7bfd22;color:var(--accent2);display:grid;place-items:center}
+.qa .qi svg{width:18px;height:18px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;color:var(--dim);font-size:12px;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:#ffffff05}
+th.r,td.r{text-align:right}
+.asset{display:flex;align-items:center;gap:11px}
+.ci{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px;flex:none;box-shadow:inset 0 0 0 1px #ffffff20;position:relative}
+.ci.sm{width:24px;height:24px;font-size:10.5px}
+.ci.lg{width:44px;height:44px;font-size:17px}
+.ci .nb{position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;font-size:7.5px;display:grid;place-items:center;border:2px solid var(--panel)}
+.asset .n{font-weight:600}
+.asset .s{color:var(--muted);font-size:12px}
+.allocbar{width:70px;height:5px;border-radius:5px;background:var(--line);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.allocbar i{display:block;height:100%}
+.flash-up{animation:fu .9s}.flash-down{animation:fd .9s}
+@keyframes fu{0%{color:var(--green)}100%{}}@keyframes fd{0%{color:var(--red)}100%{}}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pill.ok{background:#16c78420;color:#41d99b}
+.pill.pend{background:#f5a52420;color:#f5b94c}
+.pill.pend:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:pl 1s infinite}
+@keyframes pl{50%{opacity:.25}}
+.tx-ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--panel3);color:var(--muted);flex:none;position:relative}
+.tx-ic svg{width:16px;height:16px}
+.tx-ic.in{color:var(--green);background:#16c7841a}
+.tx-ic.out{color:#ff8b92;background:#ea39431a}
+.tx-ic.sw{color:var(--accent2);background:#3d7bfd1c}
+.mini-list .it{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.mini-list .it:last-child{border-bottom:0}
+.mini-list .it .grow{flex:1;min-width:0}
+.mini-list .it.click{cursor:pointer}
+.mini-list .it.click:hover{background:#ffffff04}
+.date-h{font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;padding:16px 0 4px}
+.stat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;color:var(--muted)}
+.stat b{color:var(--text);font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
+.breakdown{border-top:1px solid var(--line);margin-top:14px;padding-top:8px}
+.breakdown .stat{padding:6px 0;font-size:13px}
+.sel{width:100%;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:12px 38px 12px 14px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b95a9' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.sel.sm{padding:8px 34px 8px 12px;font-size:13px;width:auto}
+.sel option{background:#161c28}
+.hint{font-size:12.5px;margin-top:6px;color:var(--muted);min-height:16px}
+.hint.ok{color:#41d99b}.hint.bad{color:#ff7a82}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{padding:5px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line2);font-size:12px;color:var(--muted);font-weight:500}
+.chip:hover{color:var(--text);border-color:#3a4560}
+.chip.on{background:#3d7bfd22;border-color:#3d7bfd77;color:var(--text)}
+.speeds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.speed{border:1px solid var(--line2);border-radius:12px;padding:11px;text-align:left;background:var(--panel2)}
+.speed.on{border-color:var(--accent);background:#3d7bfd14;box-shadow:0 0 0 1px var(--accent) inset}
+.speed .sn{font-weight:600;font-size:13px}
+.speed .se{font-size:11.5px;color:var(--muted);margin-top:2px}
+.speed .sf{font-size:12px;margin-top:8px;font-weight:600}
+.speed .su{font-size:11.5px;color:var(--muted)}
+.swapbox{background:var(--panel2);border:1px solid var(--line2);border-radius:14px;padding:14px 16px}
+.swapbox .r1{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.swapbox .r2{display:flex;align-items:center;gap:10px}
+.swapbox input{flex:1;min-width:0;background:none;border:0;outline:none;font-size:26px;font-weight:600;letter-spacing:-.5px}
+.swapbox .sel{width:auto;min-width:130px;padding:9px 34px 9px 12px;font-weight:600;background-color:var(--panel3)}
+.flip{display:grid;place-items:center;margin:-10px auto;position:relative;z-index:2;width:38px;height:38px;border-radius:12px;background:var(--panel3);border:3px solid var(--panel);color:var(--muted)}
+.flip:hover{color:var(--text)}
+.qr-wrap{position:relative;display:inline-block;margin:10px auto 14px;padding:12px;background:#fff;border-radius:16px}
+.qr-wrap .qlogo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.addr-box{font-family:var(--mono);font-size:13.5px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;word-break:break-all;line-height:1.55;margin:10px 0 14px;text-align:center}
+.addr-box b{color:var(--accent2);font-weight:500}
+.tabs{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+.tabs button{flex:1;padding:9px;border-radius:9px;color:var(--muted);font-weight:600}
+.tabs button.on{background:var(--panel3);color:var(--text)}
+.amt-big{font-size:34px;font-weight:700;background:none;border:0;outline:none;width:100%;text-align:center;letter-spacing:-.8px}
+.amt-box{background:var(--panel2);border:1px solid var(--line2);border-radius:14px;padding:18px 16px 14px;margin-bottom:12px;text-align:center}
+.pay{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:var(--panel2);cursor:pointer;margin-bottom:8px}
+.pay.on{border-color:var(--accent);background:#3d7bfd12}
+.pay input{accent-color:var(--accent)}
+.pay .pi{width:38px;height:26px;border-radius:5px;display:grid;place-items:center;font-size:10px;font-weight:800;flex:none}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{padding:7px 13px;border-radius:20px;border:1px solid var(--line2);color:var(--muted);font-weight:500;font-size:13px}
+.filters button.on{background:var(--text);color:#0a0d13;border-color:var(--text)}
+.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.nft{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .15s,border-color .15s;text-align:left}
+.nft:hover{transform:translateY(-2px);border-color:var(--line2)}
+.nft .art{aspect-ratio:1;display:block;width:100%}
+.nft .art svg,.nft-big svg{width:100%;height:100%;display:block}
+.nft .meta{padding:12px 14px}
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--line);gap:16px}
+.set-row:last-child{border-bottom:0}
+.set-row .t{font-weight:600}
+.set-row .d{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.45}
+.toggle{width:42px;height:24px;border-radius:20px;background:var(--line2);position:relative;transition:background .15s;flex:none}
+.toggle:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.toggle.on{background:var(--accent)}
+.toggle.on:after{left:21px}
+.overlay{position:fixed;inset:0;background:#000000b0;backdrop-filter:blur(3px);display:grid;place-items:center;z-index:100;padding:16px;animation:fi .15s}
+@keyframes fi{from{opacity:0}}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:18px;width:100%;max-width:440px;padding:24px;box-shadow:0 30px 80px #000c;animation:mi .2s;max-height:calc(100vh - 32px);overflow:auto}
+@keyframes mi{from{transform:translateY(10px) scale(.98);opacity:0}}
+.modal h3{font-size:18px;margin-bottom:4px}
+.modal .x{float:right;color:var(--muted);font-size:22px;line-height:1;padding:0 6px}
+.success-ic{width:64px;height:64px;border-radius:50%;background:#16c78422;color:var(--green);display:grid;place-items:center;margin:8px auto 14px}
+.big-spin{width:52px;height:52px;border:4px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:18px auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#toasts{position:fixed;bottom:38px;right:22px;display:flex;flex-direction:column;gap:10px;z-index:200}
+.toast{background:var(--panel3);border:1px solid var(--line2);border-left:3px solid var(--green);padding:12px 16px;border-radius:10px;min-width:260px;max-width:360px;box-shadow:0 14px 40px #000a;animation:mi .2s;font-size:13px}
+.toast.e{border-left-color:var(--red)}.toast.i{border-left-color:var(--accent)}
+.toast b{display:block;margin-bottom:2px}
+.empty{text-align:center;color:var(--muted);padding:36px 10px}
+.mnav{display:none}
+.scroll-x{overflow-x:auto}
+.hide-bal .sens{filter:blur(8px);user-select:none}
+.copyable{cursor:pointer}
+.copyable:hover{color:var(--accent2)}
+.pk{font-family:var(--mono);font-size:13px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:14px;word-break:break-all;line-height:1.6;filter:blur(6px);transition:filter .2s;cursor:pointer}
+.pk.show{filter:none}
+.lock{min-height:100%;display:grid;place-items:center;padding:30px 16px;background:radial-gradient(900px 500px at 50% 0%,#16264a 0%,transparent 60%),var(--bg)}
+
+@media (max-width:1150px){.g2,.g-form{grid-template-columns:1fr}.g2 .span2{grid-column:auto}}
+@media (max-width:860px){
+  .titlebar .menu{display:none}
+  .auth{grid-template-columns:1fr}.auth-art{display:none}
+  .app{grid-template-columns:1fr}.side{display:none}
+  .top{padding:0 14px}.hide-m{display:none!important}
+  .content{padding:16px 14px 90px}
+  .big{font-size:30px}
+  .mnav{display:flex;position:fixed;bottom:26px;left:0;right:0;background:var(--panel);border-top:1px solid var(--line);z-index:30;padding:6px 4px}
+  .mnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--muted);padding:6px 0}
+  .mnav button.on{color:var(--accent2)}
+  .mnav svg{width:20px;height:20px}
+  .speeds{grid-template-columns:1fr}
+  .statusbar .hm{display:none}
+}
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="titlebar">
+    <div class="tt"><span class="lg"><svg width="10" height="10" viewBox="0 0 32 32"><path d="M5 6l11 21L27 6h-6.2L16 15.8 11.2 6z" fill="white"/></svg></span>Vaultex Wallet</div>
+    <div class="menu"><span>File</span><span>Edit</span><span>View</span><span>Window</span><span>Help</span></div>
+    <div class="winctl">
+      <button title="Minimize" id="wmin"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor"/></svg></button>
+      <button title="Maximize" id="wmax"><svg width="10" height="10" viewBox="0 0 10 10"><rect x=".5" y=".5" width="9" height="9" fill="none" stroke="currentColor"/></svg></button>
+      <button title="Close" class="cl" id="wcls"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1.1"/></svg></button>
+    </div>
+  </div>
+  <div class="win-body" id="root"></div>
+  <div class="statusbar">
+    <span style="display:flex;align-items:center;gap:7px"><span class="dot" id="sbdot"></span><span id="sbconn">Connected</span></span>
+    <span class="hm" id="sbeth"></span><span class="hm" id="sbbtc"></span><span class="hm" id="sbgas"></span>
+    <div class="sb-r"><span class="hm" id="sbsync">Synced</span><span class="sim">Vaultex</span><span>v2.14.3</span></div>
+  </div>
+</div>
+<div id="toasts"></div>
+<script>
+"use strict";
+/* ================= utils ================= */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const ssGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}};
+const ssSet=(k,v)=>{try{v==null?sessionStorage.removeItem(k):sessionStorage.setItem(k,v)}catch(e){}};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function sha256(ascii){function r(v,a){return(v>>>a)|(v<<(32-a))}var mp=Math.pow,maxWord=mp(2,32),result='',words=[],bitLen=ascii.length*8,hash=[],k=[],pc=0,isC={},i,j;for(var c=2;pc<64;c++){if(!isC[c]){for(i=0;i<313;i+=c)isC[i]=c;hash[pc]=(mp(c,.5)*maxWord)|0;k[pc++]=(mp(c,1/3)*maxWord)|0}}ascii+='\x80';while(ascii.length%64-56)ascii+='\x00';for(i=0;i<ascii.length;i++){j=ascii.charCodeAt(i);if(j>>8)return;words[i>>2]|=j<<((3-i)%4)*8}words[words.length]=((bitLen/maxWord)|0);words[words.length]=bitLen;for(j=0;j<words.length;){var w=words.slice(j,j+=16),old=hash;hash=hash.slice(0,8);for(i=0;i<64;i++){var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4],t1=hash[7]+(r(e,6)^r(e,11)^r(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=(i<16)?w[i]:(w[i-16]+(r(w15,7)^r(w15,18)^(w15>>>3))+w[i-7]+(r(w2,17)^r(w2,19)^(w2>>>10)))|0),t2=(r(a,2)^r(a,13)^r(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));hash=[(t1+t2)|0].concat(hash);hash[4]=(hash[4]+t1)|0}for(i=0;i<8;i++)hash[i]=(hash[i]+old[i])|0}for(i=0;i<8;i++){for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16)}}return result}
+const SALT='vx.9f2c1e';
+const ksMac=(salt,pw,ct)=>sha256(unescape(encodeURIComponent(SALT+':'+salt+':'+pw+':'+ct)));
+const rhex=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),b=>b.toString(16).padStart(2,'0')).join('');
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function strSeed(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function gauss(rnd){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const B58='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',B32='qpzry9x8gf2tvdw0s3jn54khce6mua7l',HEX='0123456789abcdef';
+const rstr=(rnd,abc,n)=>{let s='';for(let i=0;i<n;i++)s+=abc[Math.floor(rnd()*abc.length)];return s};
+const cksum=a=>{const h=sha256(a);return a.split('').map((ch,i)=>/[a-f]/.test(ch)&&parseInt(h[i],16)>=8?ch.toUpperCase():ch).join('')};
+const short=(a,n=6,m=4)=>a&&a.length>n+m+2?a.slice(0,n)+'…'+a.slice(-m):a;
+const shortAddr=a=>'0x'+a.slice(0,4)+'…'+a.slice(-4);
+const fmtUSD=(v,d)=>{v=+v||0;if(d===undefined)d=Math.abs(v)>=1||v===0?2:(Math.abs(v)>=0.01?4:6);return(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})};
+const fmtPct=v=>(v>=0?'+':'')+(+v).toFixed(2)+'%';
+const fmtCompact=v=>'$'+new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(v);
+const fmtAmt=(sym,v,max)=>{const c=COIN[sym];const dp=max!=null?max:(c?c.dp:8);return(+v||0).toLocaleString('en-US',{maximumFractionDigits:dp})};
+const fmtDate=ts=>new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+const fmtShort=ts=>new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const fmtTime=ts=>new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+const ago=ts=>{const s=(Date.now()-ts)/1000;if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';if(s<86400*7)return Math.floor(s/86400)+'d ago';return fmtShort(ts)};
+
+/* ================= networks & assets ================= */
+const NETS={
+  bitcoin:{n:'Bitcoin',nat:'BTC',type:'btc',conf:3,iv:5000,col:'#F7931A',g:'₿'},
+  ethereum:{n:'Ethereum',nat:'ETH',type:'evm',conf:12,iv:1400,col:'#627EEA',g:'Ξ'},
+  solana:{n:'Solana',nat:'SOL',type:'sol',conf:1,iv:3000,col:'#9945FF',g:'S',fin:true},
+  bsc:{n:'BNB Smart Chain',nat:'BNB',type:'evm',conf:15,iv:450,col:'#E0A400',g:'B'},
+  xrpl:{n:'XRP Ledger',nat:'XRP',type:'xrp',conf:1,iv:3500,col:'#3b4357',g:'X',fin:true},
+  cardano:{n:'Cardano',nat:'ADA',type:'ada',conf:5,iv:2000,col:'#0033AD',g:'A'},
+  dogecoin:{n:'Dogecoin',nat:'DOGE',type:'doge',conf:6,iv:1500,col:'#C2A633',g:'Ð'},
+  avalanche:{n:'Avalanche C-Chain',nat:'AVAX',type:'evm',conf:1,iv:2500,col:'#E84142',g:'A',fin:true},
+  polkadot:{n:'Polkadot',nat:'DOT',type:'dot',conf:1,iv:3500,col:'#E6007A',g:'P',fin:true},
+  litecoin:{n:'Litecoin',nat:'LTC',type:'ltc',conf:6,iv:1500,col:'#345D9D',g:'Ł'},
+};
+const COINS=[
+ {s:'BTC',n:'Bitcoin',id:'bitcoin',p:97250.4,c:1.84,col:'#F7931A',g:'₿',sup:19.79e6,dp:8,net:'bitcoin'},
+ {s:'ETH',n:'Ethereum',id:'ethereum',p:3418.22,c:2.61,col:'#627EEA',g:'Ξ',sup:120.4e6,dp:6,net:'ethereum'},
+ {s:'USDT',n:'Tether USD',id:'tether',p:1.0002,c:0.01,col:'#26A17B',g:'₮',sup:140.2e9,dp:2,stable:true,net:'ethereum',std:'ERC-20'},
+ {s:'USDC',n:'USD Coin',id:'usd-coin',p:0.9999,c:0.0,col:'#2775CA',g:'$',sup:44.1e9,dp:2,stable:true,net:'ethereum',std:'ERC-20'},
+ {s:'SOL',n:'Solana',id:'solana',p:186.73,c:-1.12,col:'#9945FF',g:'S',sup:472e6,dp:4,net:'solana'},
+ {s:'BNB',n:'BNB',id:'binancecoin',p:641.9,c:0.42,col:'#E0A400',g:'B',sup:145.9e6,dp:5,net:'bsc'},
+ {s:'XRP',n:'XRP',id:'ripple',p:2.314,c:3.27,col:'#3b4357',g:'X',sup:57.4e9,dp:2,net:'xrpl'},
+ {s:'ADA',n:'Cardano',id:'cardano',p:0.7812,c:-0.84,col:'#0033AD',g:'A',sup:35.6e9,dp:2,net:'cardano'},
+ {s:'DOGE',n:'Dogecoin',id:'dogecoin',p:0.2134,c:4.12,col:'#C2A633',g:'Ð',sup:147.1e9,dp:2,net:'dogecoin'},
+ {s:'AVAX',n:'Avalanche',id:'avalanche-2',p:38.52,c:-2.35,col:'#E84142',g:'A',sup:410e6,dp:4,net:'avalanche'},
+ {s:'LINK',n:'Chainlink',id:'chainlink',p:17.84,c:1.05,col:'#2A5ADA',g:'L',sup:640e6,dp:4,net:'ethereum',std:'ERC-20'},
+ {s:'DOT',n:'Polkadot',id:'polkadot',p:6.91,c:-0.37,col:'#E6007A',g:'P',sup:1.52e9,dp:4,net:'polkadot'},
+ {s:'LTC',n:'Litecoin',id:'litecoin',p:98.14,c:0.88,col:'#345D9D',g:'Ł',sup:75.6e6,dp:6,net:'litecoin'},
+];
+const COIN=Object.fromEntries(COINS.map(c=>[c.s,c]));
+const P={},CHG={};COINS.forEach(c=>{P[c.s]=c.p;CHG[c.s]=c.c});
+const ci=(s,cls='',badge=true)=>{const c=COIN[s],n=NETS[c.net];const nb=badge&&c.std?`<span class="nb" style="background:${n.col}">${n.g}</span>`:'';return`<span class="ci ${cls}" style="background:${c.col}">${c.g}${nb}</span>`};
+const netName=s=>NETS[COIN[s].net].n+(COIN[s].std?` · ${COIN[s].std}`:'');
+
+let liveSource=false;
+async function fetchLive(){
+  try{const ids=COINS.map(c=>c.id).join(',');const ctl=new AbortController();setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,{signal:ctl.signal});
+    if(!r.ok)return;const d=await r.json();
+    COINS.forEach(c=>{const x=d[c.id];if(x&&x.usd){P[c.s]=x.usd;if(typeof x.usd_24h_change==='number')CHG[c.s]=x.usd_24h_change}});liveSource=true;
+  }catch(e){}
+}
+function walk(){COINS.forEach(c=>{const old=P[c.s];let r;if(c.stable){P[c.s]=old+(1-old)*0.3+gauss(Math.random)*0.00004;r=P[c.s]/old-1}else{r=gauss(Math.random)*0.00075+0.00002;P[c.s]=old*(1+r)}CHG[c.s]=((1+CHG[c.s]/100)*(1+r)-1)*100})}
+const RANGES={'1D':{n:96,vol:.0045,ms:864e5},'1W':{n:84,vol:.011,ms:7*864e5},'1M':{n:90,vol:.02,ms:30*864e5},'1Y':{n:122,vol:.07,ms:365*864e5}};
+const pathCache={};
+function getPath(sym,range){const key=sym+range;if(pathCache[key])return pathCache[key];const R=RANGES[range],c=COIN[sym],rnd=mulberry(strSeed(key+'vx'));const vol=c.stable?0.0003:R.vol*(sym==='BTC'?0.8:sym==='DOGE'?1.5:1);const x=new Array(R.n);x[R.n-1]=0;for(let i=R.n-1;i>0;i--)x[i-1]=x[i]-vol*gauss(rnd)-(range==='1Y'&&!c.stable?0.004:0);if(range==='1D'){const T=Math.log(1/(1+CHG[sym]/100)),x0=x[0];for(let i=0;i<R.n;i++)x[i]+=(1-i/(R.n-1))*(T-x0)}return pathCache[key]=x.map(Math.exp)}
+const times=range=>{const R=RANGES[range],now=Date.now();return Array.from({length:R.n},(_,i)=>now-R.ms*(1-i/(R.n-1)))};
+
+/* chain status */
+let GAS=16.8;const BLK={eth:21483112+Math.floor((Date.now()-Date.UTC(2026,10,11))/12000),btc:874221+Math.floor((Date.now()-Date.UTC(2026,10,11))/600000)};
+setInterval(()=>{BLK.eth++;GAS=Math.max(6,Math.min(48,GAS*(1+gauss(Math.random)*0.06)+(16-GAS)*0.05));updStatus()},12000);
+setInterval(()=>{BLK.btc++;updStatus()},600000);
+function updStatus(){const e=$('#sbeth'),b=$('#sbbtc'),g=$('#sbgas');if(e)e.textContent='ETH #'+BLK.eth.toLocaleString('en-US');if(b)b.textContent='BTC #'+BLK.btc.toLocaleString('en-US');if(g)g.textContent='⛽ '+GAS.toFixed(1)+' gwei';const gv=$('#gasv');if(gv)gv.textContent=GAS.toFixed(1)+' gwei'}
+
+/* fees (in the network's native coin) */
+const SPEED={slow:{n:'Slow',m:.8},avg:{n:'Average',m:1},fast:{n:'Fast',m:1.35}};
+const ETA={bitcoin:['~60 min','~30 min','~10 min'],ethereum:['~3 min','~45 sec','~15 sec'],litecoin:['~15 min','~5 min','~2.5 min'],dogecoin:['~10 min','~3 min','~1 min']};
+function feeFor(sym,speed,kind){
+  const c=COIN[sym],net=c.net,nat=NETS[net].nat,m=SPEED[speed].m,i=['slow','avg','fast'].indexOf(speed);let amt,det='';
+  if(net==='ethereum'){const lim=kind==='swap'?185000:c.std?65000:21000;const g=GAS*m;amt=g*1e-9*lim;det=`${g.toFixed(1)} gwei · ${lim.toLocaleString()} gas`}
+  else if(net==='bitcoin'){const r=Math.max(2,Math.round({slow:4,avg:9,fast:16}[speed]*(1+(GAS-16)/60)));amt=r*(kind==='swap'?225:141)/1e8;det=`${r} sat/vB`}
+  else if(net==='solana'){amt=0.000005+[0,0.000012,0.00004][i]*(kind==='swap'?3:1);det=['Base fee','+ priority fee','+ high priority'][i]}
+  else{const base={bsc:0.000063,xrpl:0.000012,cardano:0.172,dogecoin:0.05,avalanche:0.00058,polkadot:0.0158,litecoin:0.0000226}[net];amt=base*m*(kind==='swap'?3:1)}
+  const eta=(ETA[net]||['~30 sec','~10 sec','~5 sec'])[i];
+  return{amt,sym:nat,usd:amt*P[nat],eta,det};
+}
+
+/* addresses */
+function addrFor(net,base){base=base||user.address;const t=NETS[net].type;if(t==='evm')return'0x'+cksum(base);const r=mulberry(strSeed(base+':'+net));
+  switch(t){case'btc':return'bc1q'+rstr(r,B32,38);case'ltc':return'ltc1q'+rstr(r,B32,38);case'sol':return rstr(r,B58,44);case'xrp':return'r'+rstr(r,B58,33);case'ada':return'addr1q'+rstr(r,B32,52);case'doge':return'D'+rstr(r,B58,33);case'dot':return'1'+rstr(r,B58,47)}}
+function randAddr(net,seed){const r=seed!=null?mulberry(seed):Math.random,t=NETS[net].type;switch(t){case'evm':return'0x'+cksum(rstr(r,HEX,40));case'btc':return'bc1q'+rstr(r,B32,38);case'ltc':return'ltc1q'+rstr(r,B32,38);case'sol':return rstr(r,B58,44);case'xrp':return'r'+rstr(r,B58,33);case'ada':return'addr1q'+rstr(r,B32,52);case'doge':return'D'+rstr(r,B58,33);case'dot':return'1'+rstr(r,B58,47)}}
+const VALID={evm:/^0x[0-9a-fA-F]{40}$/,btc:/^(bc1[02-9ac-hj-np-z]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/,ltc:/^(ltc1[02-9ac-hj-np-z]{11,71}|[LM][1-9A-HJ-NP-Za-km-z]{26,33})$/,sol:/^[1-9A-HJ-NP-Za-km-z]{32,44}$/,xrp:/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/,ada:/^addr1[0-9a-z]{50,110}$/,doge:/^D[1-9A-HJ-NP-Za-km-z]{25,34}$/,dot:/^1[1-9A-HJ-NP-Za-km-z]{45,47}$/};
+const PLACE={evm:'0x…',btc:'bc1q… or 1… / 3…',ltc:'ltc1q… or L…',sol:'Solana address',xrp:'r…',ada:'addr1…',doge:'D…',dot:'1…'};
+function txHash(net){const t=NETS[net].type,r=Math.random;if(t==='sol')return rstr(r,B58,88);if(t==='xrp')return rstr(r,HEX,64).toUpperCase();if(t==='evm'||t==='dot')return'0x'+rstr(r,HEX,64);return rstr(r,HEX,64)}
+const ROUTER='0x1111111254EEB25477B68fb85Ed929f73A960582';
+
+/* visuals */
+function avatar(addr,size=34){const r=mulberry(strSeed(addr+'av'));const h=[0,1,2,3].map(()=>Math.floor(r()*360));return`<span class="av" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" viewBox="0 0 40 40"><rect width="40" height="40" fill="hsl(${h[0]} 70% 52%)"/>${[1,2,3].map(i=>`<rect x="${(r()*30-12).toFixed(1)}" y="${(r()*30-12).toFixed(1)}" width="${(22+r()*18).toFixed(1)}" height="${(22+r()*18).toFixed(1)}" fill="hsl(${h[i]} 78% ${44+i*8}%)" transform="rotate(${Math.floor(r()*360)} 20 20)"/>`).join('')}</svg></span>`}
+function qrSvg(text,size=200){const N=29,r=mulberry(strSeed(text));let cells='';const inF=(x,y)=>(x<8&&y<8)||(x>=N-8&&y<8)||(x<8&&y>=N-8);const inLogo=(x,y)=>x>=11&&x<=17&&y>=11&&y<=17;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(inF(x,y)||inLogo(x,y))continue;if(x===6||y===6){if((x+y)%2===0)cells+=`<rect x="${x}" y="${y}" width="1.02" height="1.02"/>`;continue}if(r()<0.48)cells+=`<rect x="${x}" y="${y}" width="1.02" height="1.02"/>`}
+  const f=(x,y)=>`<rect x="${x}" y="${y}" width="7" height="7"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/><rect x="${x+2}" y="${y+2}" width="3" height="3"/>`;
+  return`<svg width="${size}" height="${size}" viewBox="0 0 ${N} ${N}" shape-rendering="crispEdges" style="display:block"><g fill="#0a0d13">${cells}${f(0,0)}${f(N-7,0)}${f(0,N-7)}</g></svg>`}
+function nftArt(seed,kind){const r=mulberry(seed),h1=Math.floor(r()*360),h2=(h1+80+Math.floor(r()*120))%360;let s='';
+  if(kind==='orbs'){for(let i=0;i<7;i++)s+=`<circle cx="${(r()*200).toFixed(0)}" cy="${(r()*200).toFixed(0)}" r="${(18+r()*60).toFixed(0)}" fill="hsl(${(h1+i*37)%360} 85% 62% / .6)"/>`;s+=`<circle cx="100" cy="100" r="${(30+r()*20).toFixed(0)}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>`}
+  else{s=`<circle cx="${(40+r()*120).toFixed(0)}" cy="${(40+r()*30).toFixed(0)}" r="18" fill="hsl(${h1} 90% 75%)"/>`;for(let l=0;l<4;l++){const base=75+l*32;let d=`M0 200 L0 ${base}`;for(let x=0;x<=200;x+=20)d+=` L${x} ${(base+r()*44-22).toFixed(0)}`;d+=' L200 200Z';s+=`<path d="${d}" fill="hsl(${(h2+l*14)%360} 45% ${46-l*9}%)"/>`}}
+  return`<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="ng${seed}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h1} 70% 18%)"/><stop offset="1" stop-color="hsl(${h2} 70% 32%)"/></linearGradient></defs><rect width="200" height="200" fill="url(#ng${seed})"/>${s}</svg>`}
+
+/* ================= accounts / keystore ================= */
+const DEMO={name:'Main Wallet',address:'a10e74bac7eca747bcd4438f87032b8b83bde53d',mac:'a15d065443eeb9a635d833dd62e9aee7b61fb8090273def2181efb6ddf2d5b75',salt:'76f2ad1ab304923f43f99db043076e724de9c290fba82135428cdd87071a8e65',ct:'b95cfa42cc403ef94b28714b65bcd68ab3ce9238f1d6b4a5d131d0684c82b12d',demo:true};
+const getAccounts=()=>lsGet('vx2_accounts')||{};
+function findByAddr(a){a=(a||'').toLowerCase().replace(/^0x/,'');if(a===DEMO.address)return DEMO;const x=getAccounts()[a];return x?{...x,address:a}:null}
+function parseKeystore(text){let k;try{k=JSON.parse(text)}catch(e){return null}
+  if(!k||k.version!==3||typeof k.address!=='string'||!/^(0x)?[0-9a-f]{40}$/i.test(k.address))return null;
+  const c=k.crypto||k.Crypto;if(!c||!c.ciphertext||!c.mac||!c.kdfparams||!c.kdfparams.salt)return null;
+  return{address:k.address.toLowerCase().replace(/^0x/,''),ct:c.ciphertext,salt:c.kdfparams.salt,mac:c.mac,raw:k}}
+/* A wallet is "managed" when it was created in this app (its MAC uses our scheme) — the
+   built-in wallet or any wallet created here. For those we verify the exact password.
+   Any other structurally-valid keystore is treated as an external/imported wallet and
+   unlocks with any non-empty password (simulated decrypt), so different real-looking
+   keystore files can be loaded for testing. */
+function extWallet(addr){addr=(addr||'').toLowerCase().replace(/^0x/,'');return addr!==DEMO.address&&!getAccounts()[addr]}
+function verifyPw(acc,pw){return ksMac(acc.salt,pw,acc.ct)===acc.mac||(!!pw&&extWallet(acc.address))}
+function makeKeystore(pw){const salt=rhex(32),ct=rhex(32),iv=rhex(16),address=rhex(20),mac=ksMac(salt,pw,ct);const id=[rhex(4),rhex(2),'4'+rhex(2).slice(1),rhex(2),rhex(6)].join('-');
+  return{address,mac,salt,ct,json:{version:3,id,address,crypto:{ciphertext:ct,cipherparams:{iv},cipher:'aes-128-ctr',kdf:'scrypt',kdfparams:{dklen:32,salt,n:262144,r:8,p:1},mac}}}}
+
+/* ================= Supabase cloud backend ================= */
+/* Optional cloud backend. Leave SB_URL / SB_KEY empty for a front-end-only build
+   (the wallet then persists locally in the browser). To enable sync, plug in your
+   own Supabase project URL and publishable (anon) key. */
+const SB_URL='';
+const SB_KEY='';
+const SB_ON=!!(SB_URL&&SB_KEY);
+const SB_H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
+let sbOnline=true;
+function sbMark(on){if(on===sbOnline)return;sbOnline=on;const c=$('#sbconn');if(c)c.textContent=on?'Connected':'Reconnecting…';const d=$('#sbdot');if(d)d.style.background=on?'var(--green)':'var(--warn)'}
+async function sbFetch(path,opts){if(!SB_ON)throw new Error('backend not configured');opts=opts||{};const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),9000);
+  try{const r=await fetch(SB_URL+'/rest/v1/'+path,{...opts,headers:{...SB_H,...(opts.headers||{})},signal:ctl.signal});clearTimeout(t);sbMark(true);return r}catch(e){clearTimeout(t);sbMark(false);throw e}}
+async function dbGetWallet(address){address=(address||'').toLowerCase().replace(/^0x/,'');const r=await sbFetch('wallets?select=keystore,state&address=eq.'+address);if(!r.ok)throw new Error('db '+r.status);const a=await r.json();return a.length?a[0]:null}
+async function dbUpsert(address,keystore,state){address=(address||'').toLowerCase().replace(/^0x/,'');const r=await sbFetch('wallets',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify({address,keystore,state,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error('db '+r.status);return true}
+async function dbSaveState(address,state){address=(address||'').toLowerCase().replace(/^0x/,'');const r=await sbFetch('wallets?address=eq.'+address,{method:'PATCH',body:JSON.stringify({state,updated_at:new Date().toISOString()})});if(!r.ok)throw new Error('db '+r.status);return true}
+function accFromKeystore(json,state){const c=json.crypto||json.Crypto;const a=(json.address||'').toLowerCase().replace(/^0x/,'');return{address:a,keystore:json,mac:c.mac,salt:c.kdfparams.salt,ct:c.ciphertext,state,demo:a===DEMO.address}}
+function markStep(id){const r=$('#'+id);if(r){const b=r.querySelector('b');if(b)b.outerHTML='<b class="up">✓</b>';const s=r.querySelector('span');if(s)s.style.color='var(--text)'}}
+async function markAfter(id,ms){await sleep(ms);markStep(id)}
+
+/* ================= wallet state ================= */
+function demoState(){
+  const now=Date.now(),D=864e5,A=DEMO.address,tx=[];let seed=7;
+  const T=(days,o)=>{const net=COIN[o.sym].net,me=addrFor(net,A),other=o.other||randAddr(net,seed++),inb=o.type==='receive'||o.type==='buy';
+    const f=inb?null:feeFor(o.sym,'avg',o.type==='swap'||o.type==='approve'?'swap':null);
+    tx.push({hash:txHash(net),ts:now-days*D-Math.floor(Math.random()*D*0.5),net,done:true,from:inb?other:me,to:inb?me:other,fee:f?+f.amt.toPrecision(4):null,feeSym:f?f.sym:null,...o})};
+  T(244,{type:'receive',sym:'USDC',amt:20000,price:1});
+  T(241,{type:'receive',sym:'BTC',amt:0.35,price:58420});
+  T(233,{type:'receive',sym:'ETH',amt:5.2,price:2512});
+  T(212,{type:'approve',sym:'USDC',amt:0,other:ROUTER,label:'Vaultex Aggregator Router'});
+  T(211,{type:'swap',sym:'USDC',amt:15710,toSym:'SOL',toAmt:110,price:1,other:ROUTER,label:'Vaultex Aggregator Router'});
+  T(187,{type:'swap',sym:'USDC',amt:2362,toSym:'LINK',toAmt:180,price:1,other:ROUTER,label:'Vaultex Aggregator Router'});
+  T(160,{type:'buy',sym:'XRP',amt:3100,price:0.62,usd:1950.6,provider:'Visa debit •••• 0392'});
+  T(151,{type:'buy',sym:'ADA',amt:5200,price:0.41,usd:2164.3,provider:'Bank transfer •••• 4821'});
+  T(122,{type:'send',sym:'SOL',amt:25.69,price:171.4});
+  T(118,{type:'receive',sym:'BTC',amt:0.13213,price:66310});
+  T(97,{type:'swap',sym:'LINK',amt:59.5,toSym:'BNB',toAmt:1.42,price:14.9,other:ROUTER,label:'Vaultex Aggregator Router'});
+  T(84,{type:'buy',sym:'DOGE',amt:15000,price:0.138,usd:2101.4,provider:'Visa debit •••• 0392'});
+  T(61,{type:'receive',sym:'ETH',amt:1.0154,price:3011});
+  T(55,{type:'send',sym:'USDC',amt:3500,price:1,label:'Exchange deposit'});
+  T(33,{type:'swap',sym:'USDC',amt:1024,toSym:'BNB',toAmt:1.7,price:1,other:ROUTER,label:'Vaultex Aggregator Router'});
+  T(19,{type:'receive',sym:'USDT',amt:2500,price:1});
+  T(2,{type:'receive',sym:'USDC',amt:2000,price:1});
+  tx.sort((a,b)=>b.ts-a.ts);
+  return{v:2,name:'Main Wallet',holdings:{BTC:0.48213,ETH:6.2154,USDC:12450.32,USDT:2500,SOL:84.31,BNB:3.12,XRP:3100,ADA:5200,DOGE:15000,LINK:120.5},tx,
+    notifs:[{t:'Wallet restored on a new device',d:'Your wallet was imported on this computer. If this wasn’t you, move your funds immediately.',ts:now,read:false},
+      {t:'Received 2,000 USDC',d:'Incoming transfer on Ethereum was confirmed.',ts:now-2*D,read:false},
+      {t:'Price alert: BTC',d:'Bitcoin is up more than 5% in the last 24 hours.',ts:now-4*D,read:true}],
+    contacts:[{name:'Cold storage',net:'bitcoin',addr:randAddr('bitcoin',901)},{name:'Alex',net:'ethereum',addr:randAddr('ethereum',902)},{name:'Exchange deposit',net:'ethereum',addr:randAddr('ethereum',903)},{name:'Maria',net:'solana',addr:randAddr('solana',904)}],
+    nfts:genNFTs(A),autolock:15};
+}
+function blankState(name){return{v:2,name,holdings:{},tx:[],notifs:[{t:'Wallet created',d:'Back up your keystore file and keep it somewhere safe.',ts:Date.now(),read:false}],contacts:[],nfts:[],autolock:15}}
+function genNFTs(a){const out=[];[{c:'Chromatic Orbs',k:'orbs',fl:0.42,ids:[1184,2207,3391,4026]},{c:'Prism Peaks',k:'peaks',fl:0.18,ids:[77,512,1903]}].forEach(x=>x.ids.forEach(id=>out.push({col:x.c,kind:x.k,id,name:`${x.c} #${id}`,floor:x.fl,seed:strSeed(a+x.c+id),contract:randAddr('ethereum',strSeed(x.c))})));return out}
+
+/* ================= session ================= */
+let user=null,S=null,view='portfolio',vparam=null,range='1W',aRange='1D',netFilter='all',actFilter='all',hideBal=!!lsGet('vx_hide');
+let syncT=null,syncPending=false;
+function markSync(txt,col){const el=$('#sbsync');if(el){el.textContent=txt;el.style.color=col||''}}
+const save=()=>{if(!user)return;try{lsSet('vx2_cache_'+user.address,{keystore:user.keystore,state:S})}catch(e){}queueSync()};
+function queueSync(){if(!SB_ON){markSync('Saved');return}syncPending=true;markSync('Saving…','var(--warn)');clearTimeout(syncT);syncT=setTimeout(flushSync,800)}
+async function flushSync(){if(!user||!syncPending)return;syncPending=false;const addr=user.address,snap=S;
+  try{await dbSaveState(addr,snap);markSync('Synced')}catch(e){markSync('Offline','var(--red)');setTimeout(()=>{if(user&&user.address===addr){syncPending=true;queueSync()}},5000)}}
+function startSession(acc){
+  user={address:acc.address,mac:acc.mac,salt:acc.salt,ct:acc.ct,keystore:acc.keystore,demo:!!acc.demo};
+  S=(acc.state&&acc.state.v===2)?acc.state:(acc.demo?demoState():blankState('Wallet'));
+  try{lsSet('vx2_cache_'+acc.address,{keystore:acc.keystore,state:S})}catch(e){}
+  ssSet('vx_session',acc.address);view='portfolio';vparam=null;renderApp();markSync('Synced')
+}
+function lockWallet(msg){if(!user)return renderAuth('welcome');const acc={address:user.address,keystore:user.keystore,mac:user.mac,salt:user.salt,ct:user.ct,state:S,demo:user.demo};user=null;S=null;closeModal();renderLock(acc,msg)}
+function forget(){ssSet('vx_session',null);user=null;S=null;closeModal();renderAuth('welcome')}
+let idleT;function bumpIdle(){clearTimeout(idleT);if(user)idleT=setTimeout(()=>lockWallet('Wallet locked after inactivity.'),((S&&S.autolock)||15)*60000)}
+['click','keydown','mousemove'].forEach(e=>document.addEventListener(e,bumpIdle,{passive:true}));
+$('#wcls').onclick=()=>{if(user){lockWallet();toast('Wallet locked','Vaultex is still running in the system tray.','i')}};
+$('#wmin').onclick=()=>toast('Vaultex Wallet','Minimized to the system tray.','i');
+$('#wmax').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+
+/* ================= icons ================= */
+const sv=(d,w=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const sz=(svg,n=16)=>svg.replace('<svg',`<svg width="${n}" height="${n}"`);
+const I={
+ port:sv('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'),
+ send:sv('<path d="M7 17L17 7M17 7H9M17 7v8"/>',2.2),
+ recv:sv('<path d="M17 7L7 17M7 17h8M7 17V9"/>',2.2),
+ swap:sv('<path d="M7 4v16M7 20l-4-4M7 20l4-4M17 20V4M17 4l-4 4M17 4l4 4"/>'),
+ buy:sv('<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>'),
+ act:sv('<path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/>'),
+ nft:sv('<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'),
+ set:sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'),
+ lock:sv('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'),
+ bell:sv('<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/>'),
+ eye:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+ eyeoff:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.9 17.9A10 10 0 0112 20C5 20 1 12 1 12a18 18 0 015.1-5.9M9.9 4.2A9 9 0 0112 4c7 0 11 8 11 8a18 18 0 01-2.2 3.2M1 1l22 22"/></svg>',
+ copy:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>',
+ check:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>',
+ shield:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+ chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>',
+ globe:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>',
+ key:sv('<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M17 6l3 3M14 9l2 2"/>'),
+ approve:sv('<path d="M9 12l2 2 4-4"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
+ back:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>',
+};
+const logoSvg='<div class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M5 6l11 21L27 6h-6.2L16 15.8 11.2 6z" fill="white"/></svg></div>';
+
+/* ================= toasts & modal ================= */
+function toast(title,msg,kind=''){const el=document.createElement('div');el.className='toast '+kind;el.innerHTML=`<b>${esc(title)}</b>${msg?`<span class="muted">${esc(msg)}</span>`:''}`;$('#toasts').appendChild(el);setTimeout(()=>{el.style.transition='opacity .3s';el.style.opacity=0;setTimeout(()=>el.remove(),300)},4200)}
+function openModal(html){closeModal();const o=document.createElement('div');o.className='overlay';o.id='ov';o.innerHTML=`<div class="modal">${html}</div>`;o.addEventListener('mousedown',e=>{if(e.target===o&&!o.dataset.busy)closeModal()});document.body.appendChild(o);bindModal(o);return o}
+function bindModal(o){bindEyes(o);$$('[data-x]',o).forEach(b=>b.onclick=closeModal)}
+function closeModal(){const o=$('#ov');if(o)o.remove()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const o=$('#ov');if(o&&!o.dataset.busy)closeModal()}});
+function bindEyes(root){$$('[data-eye]',root).forEach(b=>b.onclick=()=>{const p=b.previousElementSibling;p.type=p.type==='password'?'text':'password';b.innerHTML=p.type==='password'?I.eye:I.eyeoff})}
+function copy(text,label){try{navigator.clipboard.writeText(text)}catch(e){}toast((label||'Value')+' copied',short(text,10,8),'i')}
+const stepsHtml=(id,list)=>`<div class="card" style="padding:6px 16px;margin-top:14px">${list.map((s,i)=>`<div class="stat" id="${id}${i}" style="align-items:center"><span>${s}</span><b class="dim">•••</b></div>`).join('')}</div>`;
+async function runSteps(id,n,delays){for(let i=0;i<n;i++){await sleep(delays[i]||800);const r=$('#'+id+i);if(r){r.querySelector('b').outerHTML='<b class="up">✓</b>';r.querySelector('span').style.color='var(--text)'}}}
+
+/* ================= AUTH: welcome / import / create / lock ================= */
+let failCount=0,lockUntil=0,pendingKs=null;
+const backBtn=`<button type="button" class="muted" id="bk" style="display:flex;align-items:center;gap:6px;margin-bottom:22px;font-weight:500">${I.back}Back</button>`;
+const upIcon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
+const dlIcon='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
+function renderAuth(mode='welcome',msg){
+  document.title='Vaultex Wallet';
+  const tk=['BTC','ETH','SOL','XRP'].map(s=>`<div class="tcard"><div class="row">${ci(s,'sm')} ${s} <span class="muted" style="font-weight:500;margin-left:auto;font-size:12px" data-chg="${s}"></span></div><div class="p num" data-price="${s}">${fmtUSD(P[s])}</div></div>`).join('');
+  $('#root').innerHTML=`<div class="auth">
+   <aside class="auth-art"><div class="brand">${logoSvg}Vaultex</div>
+     <div><h1>Your keys.<br>Your crypto.</h1><p class="lead">A self-custody wallet for Web3. Buy, swap and hold digital assets — your private keys are encrypted on your device and never shared with anyone.</p><div class="ticker-cards">${tk}</div></div>
+     <div>
+       <div style="color:#f5b94c;font-size:11.5px;margin-bottom:9px;display:flex;align-items:center;gap:6px">Secure Cripto Wallet</div>
+       <div class="auth-foot"><span>© 2026 Vaultex</span><a class="dim" href="https://ethereum.org/en/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy</a><a class="dim" href="https://ethereum.org/en/terms-of-use/" target="_blank" rel="noopener noreferrer">Terms of Use</a><a class="dim" href="https://ethereum.org/en/wallets/" target="_blank" rel="noopener noreferrer">Support</a></div>
+     </div></aside>
+   <main class="auth-form-wrap"><div class="auth-card" id="authCard"></div></main></div>`;
+  authForm(mode,msg);liveDom();
+}
+function authForm(mode,msg){
+  const box=$('#authCard');const showErr=m=>{$('#aerr').innerHTML=`<div class="err">${esc(m)}</div>`};
+  if(mode==='welcome'){
+    box.innerHTML=`<div style="text-align:center">
+      <div class="logo" style="width:72px;height:72px;border-radius:20px;margin:0 auto 22px"><svg width="36" height="36" viewBox="0 0 32 32"><path d="M5 6l11 21L27 6h-6.2L16 15.8 11.2 6z" fill="white"/></svg></div>
+      <h2 style="font-size:28px">Welcome to Web3</h2>
+      <p class="sub" style="margin:8px auto 34px;max-width:320px">Vaultex is a self-custody wallet. There are no accounts or logins — only you hold the keys to your wallet.</p>
+      ${msg?`<div class="err" style="text-align:left">${esc(msg)}</div>`:''}
+      <button class="btn btn-primary btn-block" id="wcreate" style="padding:15px;font-size:15px">${I.plus}Create a new wallet</button>
+      <button class="btn btn-ghost btn-block" id="wimport" style="padding:15px;font-size:15px;margin-top:10px">${upIcon.replace(/"22"/g,'"17"')}Import / Restore wallet</button>
+      <p class="legal" style="margin-top:28px">By continuing, you agree to the Vaultex <a href="https://ethereum.org/en/terms-of-use/" target="_blank" rel="noopener noreferrer">Terms of Use</a> and <a href="https://ethereum.org/en/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy Notice</a>.</p></div>`;
+    $('#wcreate').onclick=()=>authForm('create');$('#wimport').onclick=()=>authForm('import');return;
+  }
+  if(mode==='import'){
+    pendingKs=null;
+    box.innerHTML=`${backBtn}<div class="muted" style="font-size:12px;font-weight:600;letter-spacing:.4px;margin-bottom:6px">STEP 1 OF 2</div><h2>Upload your keystore</h2><p class="sub">Select the encrypted keystore file (UTC / JSON) of the wallet you want to restore.</p>
+     <div id="aerr"></div>
+     <input type="file" id="kf" accept=".json,application/json,*" class="hidden">
+     <div id="kzone"><div class="drop" id="drop"><div class="di">${upIcon}</div><b>Drop your keystore file here</b><span class="muted" style="font-size:13px">or <a href="#" onclick="return false">browse your device</a> · UTC / JSON</span></div></div>
+     <div class="warnbox" style="margin-top:16px">Only import a keystore file you created yourself. Never upload it to websites you don’t trust.</div>
+     <p class="legal">Your keystore is processed locally — your private keys never leave this device.</p>`;
+    $('#bk').onclick=()=>authForm('welcome');
+    const fi=$('#kf'),zone=$('#kzone');
+    const resetZone=()=>{fi.value='';authForm('import')};
+    const loadFile=f=>{if(!f)return;$('#aerr').innerHTML='';if(f.size>64*1024)return showErr('This file is too large to be a keystore file.');
+      const r=new FileReader();r.onload=async()=>{
+        zone.innerHTML=`<div class="fchip"><div class="fi" style="background:#3d7bfd1f;color:var(--accent2)"><span class="spin" style="border-color:#6a9bff55;border-top-color:#6a9bff"></span></div><div style="flex:1;min-width:0"><div class="fn">${esc(f.name)}</div><div class="fm" id="kst">Uploading…</div><div class="strength" style="margin-top:8px"><i id="kbar" style="background:var(--accent);transition:width .5s"></i></div></div></div>`;
+        await sleep(60);$('#kbar').style.width='45%';await sleep(550);$('#kst').textContent='Validating keystore format…';$('#kbar').style.width='85%';await sleep(650);
+        const k=parseKeystore(r.result);
+        if(!k){zone.innerHTML=`<div class="drop" id="drop2"><div class="di" style="background:#ea39431f;color:#ff8b92">${upIcon}</div><b>Upload failed</b><span class="muted" style="font-size:13px">Click to choose another file</span></div>`;$('#drop2').onclick=resetZone;return showErr('Invalid keystore file. Please select a valid UTC / JSON keystore (V3).')}
+        $('#kbar').style.width='100%';await sleep(300);
+        pendingKs={k,name:f.name,size:f.size};
+        box.innerHTML=`<div style="text-align:center"><div class="success-ic">${I.check}</div><h2 style="font-size:24px">Keystore uploaded successfully</h2><p class="sub" style="margin:8px auto 22px;max-width:330px">Your wallet file was verified. Next, enter the password to decrypt it.</p></div>
+          <div class="fchip" style="margin-bottom:18px"><div class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div><div style="flex:1;min-width:0"><div class="fn">${esc(f.name)}</div><div class="fm">Wallet <span class="addr">${shortAddr(k.address)}</span> · ${(f.size/1024).toFixed(1)} KB · Keystore V3</div></div></div>
+          <button class="btn btn-primary btn-block" id="kcont">Continue</button>
+          <button class="btn btn-ghost btn-block" id="kother" style="margin-top:10px">Use a different file</button>`;
+        $('#kcont').onclick=()=>authForm('importpw');$('#kother').onclick=()=>authForm('import');
+      };r.readAsText(f)};
+    const drop=$('#drop');
+    drop.onclick=()=>fi.click();fi.onchange=()=>loadFile(fi.files[0]);
+    ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+    drop.addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));
+    return;
+  }
+  if(mode==='importpw'){
+    if(!pendingKs)return authForm('import');const ks=pendingKs.k;
+    box.innerHTML=`${backBtn}<div class="muted" style="font-size:12px;font-weight:600;letter-spacing:.4px;margin-bottom:6px">STEP 2 OF 2</div><h2>Enter your password</h2><p class="sub">Type the password that was used to encrypt this keystore file.</p>
+     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">${avatar(ks.address,40)}<div><div style="font-weight:600">Wallet</div><div class="addr muted">${shortAddr(ks.address)}</div></div><span class="pill ok" style="margin-left:auto">${I.shield} File uploaded</span></div>
+     <div id="aerr"></div>
+     <form id="fa" autocomplete="off">
+     <div class="field"><label>Keystore password</label><div class="input-wrap"><input class="input" id="pw" type="password" autocomplete="off" placeholder="Enter password" required><button type="button" class="eye" data-eye>${I.eye}</button></div></div>
+     <button class="btn btn-primary btn-block" id="sb" disabled>Unlock wallet</button></form>
+     <p class="legal">Forgot your password? Vaultex can’t recover it — it never leaves your device.</p>`;
+    $('#bk').onclick=()=>authForm('import');bindEyes(box);
+    const sb=$('#sb'),pwI=$('#pw');pwI.focus();pwI.addEventListener('input',()=>{sb.disabled=!pwI.value});
+    $('#fa').onsubmit=async e=>{e.preventDefault();
+      if(Date.now()<lockUntil)return showErr(`Too many attempts. Try again in ${Math.ceil((lockUntil-Date.now())/1000)}s.`);
+      const pw=pwI.value;sb.disabled=true;sb.innerHTML='<span class="spin"></span>Decrypting keystore';await sleep(1100);
+      if(!verifyPw(ks,pw)){sb.disabled=false;sb.textContent='Unlock wallet';failCount++;if(failCount>=5){lockUntil=Date.now()+30000;failCount=0}pwI.select();return showErr('Incorrect password. Unable to decrypt the keystore file.')}
+      failCount=0;pendingKs=null;restoring(ks)};
+    return;
+  }
+  if(mode==='create'){
+    box.innerHTML=`${backBtn}<div class="muted" style="font-size:12px;font-weight:600;letter-spacing:.4px;margin-bottom:6px">STEP 1 OF 2</div><h2>Create a password</h2><p class="sub">This password encrypts your keystore file and is used to unlock the wallet and sign transactions.</p>
+     <div id="aerr"></div><form id="fa">
+     <div class="field"><label>New password</label><div class="input-wrap"><input class="input" id="pw" type="password" autocomplete="new-password" placeholder="At least 8 characters" required><button type="button" class="eye" data-eye>${I.eye}</button></div><div class="strength"><i id="str"></i></div></div>
+     <div class="field"><label>Confirm password</label><div class="input-wrap"><input class="input" id="pw2" type="password" autocomplete="new-password" required><button type="button" class="eye" data-eye>${I.eye}</button></div></div>
+     <label class="check" style="margin:8px 0 22px;align-items:flex-start"><input type="checkbox" id="tos" style="margin-top:2px"> <span>I understand that Vaultex cannot recover this password or my keystore file for me.</span></label>
+     <button class="btn btn-primary btn-block" id="sb">Create wallet</button></form>`;
+    $('#bk').onclick=()=>authForm('welcome');bindEyes(box);
+    $('#pw').oninput=()=>{const v=$('#pw').value;let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;const el=$('#str');el.style.width=(s*25)+'%';el.style.background=['#ea3943','#ea3943','#f5a524','#7ccf3a','#16c784'][s]};
+    $('#fa').onsubmit=async e=>{e.preventDefault();const pw=$('#pw').value;
+      if(pw.length<8)return showErr('Password must be at least 8 characters.');if(pw!==$('#pw2').value)return showErr('Passwords do not match.');if(!$('#tos').checked)return showErr('Please confirm that you understand before continuing.');
+      const b=$('#sb');b.disabled=true;b.innerHTML='<span class="spin"></span>Generating keys';await sleep(1400);
+      const k=makeKeystore(pw),st=blankState('Wallet '+(10+Math.floor(Math.random()*90)));
+      const fname=`UTC--${new Date().toISOString().replace(/:/g,'-')}--${k.address}.json`;
+      const dl=()=>{const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(k.json)],{type:'application/json'}));l.download=fname;l.click()};
+      box.innerHTML=`<div class="muted" style="font-size:12px;font-weight:600;letter-spacing:.4px;margin-bottom:6px">STEP 2 OF 2</div><h2>Back up your wallet</h2><p class="sub">Download your encrypted keystore file. You’ll need it and your password to restore this wallet on any device.</p>
+        <div class="fchip" style="margin-bottom:14px"><div class="fi">${I.shield}</div><div style="min-width:0"><div class="fn">${esc(fname)}</div><div class="fm">Address <span class="addr">${shortAddr(k.address)}</span></div></div></div>
+        <div class="warnbox">If you lose this file or forget your password, nobody — including Vaultex — can recover your funds.</div>
+        <button class="btn btn-ghost btn-block" id="redl">${dlIcon}Download keystore file</button>
+        <button class="btn btn-primary btn-block" id="goin" style="margin-top:10px" disabled>I’ve saved my file — continue</button>`;
+      $('#redl').onclick=()=>{dl();$('#goin').disabled=false};
+      $('#goin').onclick=async()=>{
+        box.innerHTML=`<div style="text-align:center"><div class="big-spin"></div><h2 style="font-size:22px">Setting up your wallet</h2><p class="sub" style="margin-bottom:8px"><span class="addr">${shortAddr(k.address)}</span></p></div>${stepsHtml('cs',['Encrypting keystore locally','Registering wallet on Vaultex cloud','Finalizing'])}`;
+        await markAfter('cs0',650);let ok=true;try{if(SB_ON)await dbUpsert(k.address,k.json,st)}catch(e){ok=false}
+        markStep('cs1');await sleep(500);markStep('cs2');await sleep(450);
+        const accs=getAccounts();accs[k.address]={mac:k.mac,salt:k.salt,ct:k.ct};lsSet('vx2_accounts',accs);
+        startSession(accFromKeystore(k.json,st));
+        toast('Wallet created',SB_ON?(ok?'Encrypted keystore saved to the cloud.':'Saved locally; it will sync when you reconnect.'):'Your new wallet is ready to use.')}};
+  }
+}
+async function restoring(ks){
+  const box=$('#authCard');
+  box.innerHTML=`<div style="text-align:center"><div class="big-spin"></div><h2 style="font-size:22px">Restoring your wallet</h2><p class="sub" style="margin-bottom:8px"><span class="addr">${shortAddr(ks.address)}</span></p></div>${stepsHtml('rs',['Decrypting keystore','Connecting to Vaultex cloud','Downloading your encrypted wallet','Syncing balances & history'])}`;
+  await markAfter('rs0',650);
+  let row;try{row=SB_ON?await dbGetWallet(ks.address):undefined}catch(e){row=undefined}
+  markStep('rs1');await sleep(500);
+  if(row===null){const st=ks.address===DEMO.address?demoState():blankState('Wallet');try{if(SB_ON)await dbUpsert(ks.address,ks.raw,st)}catch(e){}row={keystore:ks.raw,state:st}}
+  else if(row===undefined){row={keystore:ks.raw,state:ks.address===DEMO.address?demoState():blankState('Wallet')}}
+  else if(row.keystore&&row.keystore.crypto&&row.keystore.crypto.mac!==ks.mac){toast('Keystore mismatch','The cloud record doesn’t match this file.','e');return renderAuth('import')}
+  markStep('rs2');await sleep(650);markStep('rs3');await sleep(550);if(!$('#rs3'))return;
+  startSession(accFromKeystore(row.keystore||ks.raw,row.state));toast('Wallet restored','Your assets and history are synced.');
+}
+function renderLock(acc,msg){
+  const name=(acc.state&&acc.state.name)||'Wallet';
+  $('#root').innerHTML=`<div class="lock"><div class="auth-card" style="text-align:center">
+    <div style="display:inline-block;margin-bottom:16px">${avatar(acc.address,72)}</div>
+    <h2>Welcome back</h2><p class="sub">${esc(name)} · <span class="addr">${shortAddr(acc.address)}</span></p>
+    <div id="aerr">${msg?`<div class="infobox" style="margin-bottom:14px">${esc(msg)}</div>`:''}</div>
+    <form id="fl" style="text-align:left"><div class="field"><label>Password</label><div class="input-wrap"><input class="input" id="lpw" type="password" placeholder="Enter your wallet password"><button type="button" class="eye" data-eye>${I.eye}</button></div></div>
+    <button class="btn btn-primary btn-block" id="lb">Unlock</button></form>
+    <p class="legal">Not your wallet? <a href="#" id="lother">Import a different wallet</a></p></div></div>`;
+  bindEyes($('#root'));$('#lpw').focus();
+  $('#lother').onclick=e=>{e.preventDefault();forget()};
+  $('#fl').onsubmit=async e=>{e.preventDefault();const b=$('#lb');b.disabled=true;b.innerHTML='<span class="spin"></span>Unlocking';await sleep(700);
+    if(verifyPw(acc,$('#lpw').value))startSession(acc);
+    else{b.disabled=false;b.textContent='Unlock';$('#aerr').innerHTML='<div class="err">Incorrect password.</div>';$('#lpw').select()}};
+}
+
+/* ================= calculations ================= */
+const bal=s=>(S&&S.holdings[s])||0;
+const holdVal=s=>bal(s)*P[s];
+const total=()=>COINS.reduce((t,c)=>t+holdVal(c.s),0);
+const owned=()=>COINS.filter(c=>bal(c.s)>1e-12).sort((a,b)=>holdVal(b.s)-holdVal(a.s));
+function portSeries(r){const n=RANGES[r].n,v=new Array(n).fill(0);owned().forEach(c=>{const p=getPath(c.s,r),h=holdVal(c.s);for(let i=0;i<n;i++)v[i]+=h*p[i]});return v}
+function confInfo(t){const n=NETS[t.net];if(t.done)return{done:true,c:n.conf,n:n.conf};const c=Math.max(0,Math.min(n.conf,Math.floor((Date.now()-t.ts)/n.iv)));return{done:c>=n.conf,c,n:n.conf}}
+const pendingCount=()=>S?S.tx.filter(t=>!t.done).length:0;
+const debit=(s,a)=>{S.holdings[s]=bal(s)-a;if(S.holdings[s]<1e-12)delete S.holdings[s]};
+
+/* ================= charts ================= */
+const charts=[];
+function drawLine(cv,vals,o={}){
+  const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w||!vals.length)return;
+  cv.width=w*dpr;cv.height=h*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);x.clearRect(0,0,w,h);
+  let mn=Math.min(...vals),mx=Math.max(...vals);if(mx-mn<Math.abs(mx)*1e-6+1e-9){mx+=Math.abs(mx)*0.01+1;mn-=Math.abs(mn)*0.01+1}const pd=(mx-mn)*0.1;mn-=pd;mx+=pd;
+  const top=6,bot=h-(o.axis?24:4),X=i=>i/(vals.length-1)*(w-2)+1,Y=v=>top+(1-(v-mn)/(mx-mn))*(bot-top);
+  const col=vals[vals.length-1]>=vals[0]?'#16c784':'#ea3943';
+  if(o.base){x.setLineDash([2,5]);x.strokeStyle='#ffffff26';x.lineWidth=1;x.beginPath();x.moveTo(0,Y(vals[0]));x.lineTo(w,Y(vals[0]));x.stroke();x.setLineDash([])}
+  const path=()=>{x.beginPath();vals.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)))};
+  path();x.lineTo(X(vals.length-1),bot);x.lineTo(X(0),bot);x.closePath();const g=x.createLinearGradient(0,top,0,bot);g.addColorStop(0,col+'38');g.addColorStop(1,col+'00');x.fillStyle=g;x.fill();
+  path();x.lineWidth=2;x.strokeStyle=col;x.lineJoin='round';x.stroke();
+  if(o.axis&&o.times){x.fillStyle='#5f6a80';x.font='11px Inter,system-ui';x.textAlign='center';const k=w<500?3:5;for(let j=1;j<k;j++){const i=Math.round(j/k*(vals.length-1));x.fillText(o.fmtT(o.times[i]),X(i),h-6)}}
+  if(o.hover!=null){const i=o.hover;x.strokeStyle='#ffffff40';x.lineWidth=1;x.beginPath();x.moveTo(X(i),top);x.lineTo(X(i),bot);x.stroke();x.fillStyle=col;x.beginPath();x.arc(X(i),Y(vals[i]),5,0,7);x.fill();x.strokeStyle='#111620';x.lineWidth=2;x.stroke()}
+}
+function regChart(id,get,opts){
+  const cv=$('#'+id);if(!cv)return;const ch={cv,get,opts,hover:null};charts.push(ch);const tip=cv.parentElement.querySelector('.tip');
+  ch.draw=()=>drawLine(cv,get(),{...ch.opts,hover:ch.hover});ch.draw();
+  if(tip){const mv=e=>{const r=cv.getBoundingClientRect(),cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left,v=get(),i=Math.max(0,Math.min(v.length-1,Math.round(cx/r.width*(v.length-1))));ch.hover=i;ch.draw();tip.classList.remove('hidden');tip.style.left=Math.max(70,Math.min(r.width-70,i/(v.length-1)*r.width))+'px';tip.innerHTML=`<b class="num ${ch.opts.sens?'sens':''}">${fmtUSD(v[i])}</b><span class="muted">${ch.opts.fmtTip(ch.opts.times[i])}</span>`};
+    cv.addEventListener('mousemove',mv);cv.addEventListener('touchmove',mv,{passive:true});const lv=()=>{ch.hover=null;ch.draw();tip.classList.add('hidden')};cv.addEventListener('mouseleave',lv);cv.addEventListener('touchend',lv)}
+}
+const tFmt=r=>r==='1D'?(t=>new Date(t).toLocaleTimeString('en-US',{hour:'numeric'})):r==='1Y'?(t=>new Date(t).toLocaleDateString('en-US',{month:'short'})):fmtShort;
+const tipFmt=r=>r==='1D'||r==='1W'?fmtDate:(t=>new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
+const chartOpts=(r,extra)=>({axis:true,times:times(r),fmtT:tFmt(r),fmtTip:tipFmt(r),...extra});
+window.addEventListener('resize',()=>charts.forEach(c=>c.draw&&c.draw()));
+function spark(s,w=80,h=28){const p=getPath(s,'1W'),mn=Math.min(...p),mx=Math.max(...p),col=p[p.length-1]>=p[0]?'#16c784':'#ea3943';const pts=p.map((v,i)=>`${(i/(p.length-1)*w).toFixed(1)},${(h-2-(v-mn)/(mx-mn||1)*(h-4)).toFixed(1)}`).join(' ');return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/></svg>`}
+
+/* ================= transactions ================= */
+const ARROW={in:sv('<path d="M12 5v14M5 12l7 7 7-7"/>',2.4),out:sv('<path d="M12 19V5M5 12l7-7 7 7"/>',2.4)};
+function txMeta(t){
+  let title,cls='',icon,amt,sub;
+  const who=a=>{const ct=S.contacts.find(x=>x.addr===a);return ct?ct.name:short(a,6,4)};
+  switch(t.type){
+    case'receive':title=`Received ${t.sym}`;cls='in';icon=ARROW.in;amt=`<span class="up">+${fmtAmt(t.sym,t.amt)} ${t.sym}</span>`;sub=`From ${esc(t.label||who(t.from))}`;break;
+    case'send':title=`Sent ${t.sym}`;cls='out';icon=ARROW.out;amt=`-${fmtAmt(t.sym,t.amt)} ${t.sym}`;sub=`To ${esc(t.label||who(t.to))}`;break;
+    case'swap':title=`Swapped ${t.sym} → ${t.toSym}`;cls='sw';icon=I.swap;amt=`<span class="up">+${fmtAmt(t.toSym,t.toAmt)} ${t.toSym}</span>`;sub=`-${fmtAmt(t.sym,t.amt)} ${t.sym}`;break;
+    case'buy':title=`Bought ${t.sym}`;cls='in';icon=I.buy;amt=`<span class="up">+${fmtAmt(t.sym,t.amt)} ${t.sym}</span>`;sub=esc(t.provider||'Card');break;
+    case'sell':title=`Sold ${t.sym}`;cls='out';icon=I.buy;amt=`-${fmtAmt(t.sym,t.amt)} ${t.sym}`;sub=`${fmtUSD(t.usd)} to ${esc(t.provider)}`;break;
+    default:title=`Approved ${t.sym}`;icon=I.approve;amt=`<span class="muted">Contract interaction</span>`;sub=esc(t.label||short(t.to));
+  }
+  return{title,cls,icon,amt,sub};
+}
+function statusPill(t){const c=confInfo(t),n=NETS[t.net];if(c.done)return`<span class="pill ok" data-conf="${t.hash}">Confirmed</span>`;return`<span class="pill pend" data-conf="${t.hash}">${n.fin?'Processing':`Pending · ${c.c}/${c.n}`}</span>`}
+function txRow(t,compact){const m=txMeta(t);return`<div class="it click" data-act="tx" data-h="${t.hash}"><div class="tx-ic ${m.cls}">${m.icon}</div><div class="grow"><div style="font-weight:600">${m.title}</div><div class="muted" style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.sub} · ${compact?ago(t.ts):fmtTime(t.ts)}</div></div><div style="text-align:right"><div class="num sens" style="font-weight:600">${m.amt}</div><div style="margin-top:4px">${statusPill(t)}</div></div></div>`}
+function txList(list,compact){if(!list.length)return'<div class="empty">No transactions yet</div>';
+  if(compact)return`<div class="mini-list">${list.map(t=>txRow(t,true)).join('')}</div>`;
+  let out='',last='';const today=new Date().toDateString(),yest=new Date(Date.now()-864e5).toDateString();
+  list.forEach(t=>{const d=new Date(t.ts),ds=d.toDateString(),k=ds===today?'Today':ds===yest?'Yesterday':d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});if(k!==last){out+=`<div class="date-h">${k}</div>`;last=k}out+=txRow(t,false)});return`<div class="mini-list">${out}</div>`}
+function txDetail(t){
+  const m=txMeta(t),n=NETS[t.net],cf=confInfo(t);
+  const rows=[['Status',statusPill(t)],['Date',fmtDate(t.ts)],['Network',n.n]];
+  if(!n.fin)rows.push(['Confirmations',`<span data-confn="${t.hash}">${cf.c} / ${cf.n}${cf.done?'+':''}</span>`]);
+  rows.push(['From',`<span class="addr copyable" data-copy="${t.from}">${short(t.from,10,8)}</span>`],['To',`<span class="addr copyable" data-copy="${t.to}">${short(t.to,10,8)}</span>`]);
+  if(t.type==='swap')rows.push(['Paid',`${fmtAmt(t.sym,t.amt)} ${t.sym}`],['Received',`${fmtAmt(t.toSym,t.toAmt)} ${t.toSym}`]);
+  else if(t.type!=='approve')rows.push(['Amount',`${fmtAmt(t.sym,t.amt)} ${t.sym}`]);
+  if(t.type==='buy'||t.type==='sell')rows.push([t.type==='buy'?'Paid with':'Payout to',esc(t.provider)],[t.type==='buy'?'Total charged':'You receive',fmtUSD(t.usd)]);
+  if(t.fee!=null)rows.push(['Network fee',`${fmtAmt(t.feeSym,t.fee,8)} ${t.feeSym} <span class="muted">(${fmtUSD(t.fee*P[t.feeSym])})</span>`]);
+  if(t.memo)rows.push(['Destination tag',esc(t.memo)]);
+  rows.push(['Transaction hash',`<span class="addr copyable" data-copy="${t.hash}">${short(t.hash,10,8)}</span>`]);
+  openModal(`<button class="x" data-x>×</button><div style="text-align:center;padding:4px 0 14px"><div class="tx-ic ${m.cls}" style="margin:0 auto 12px;width:50px;height:50px">${m.icon}</div><div class="muted">${m.title}</div><div style="font-size:24px;font-weight:700;margin-top:4px" class="num">${m.amt}</div></div>${rows.map(([a,b])=>`<div class="stat"><span>${a}</span><b class="num">${b}</b></div>`).join('')}
+    <div class="grid2" style="margin-top:16px"><button class="btn btn-ghost" id="expl">${I.globe}View on explorer</button><button class="btn btn-ghost" data-x>Close</button></div>`);
+  $$('#ov [data-copy]').forEach(el=>el.onclick=()=>copy(el.dataset.copy,'Value'));
+  $('#expl').onclick=()=>toast('Block explorer','Explorer links','i');
+}
+function addTx(o){const net=COIN[o.sym].net,t={hash:txHash(net),ts:Date.now(),net,done:false,...o};S.tx.unshift(t);return t}
+
+const RPC={
+  evm:{m:'eth_sendRawTransaction',sig:'secp256k1 (ECDSA)',node:n=>`https://rpc.${n}.vaultex.network`,bytes:[108,120]},
+  btc:{m:'sendrawtransaction',sig:'ECDSA',node:()=>'https://btc-node.vaultex.network:8332',bytes:[191,130]},
+  ltc:{m:'sendrawtransaction',sig:'ECDSA',node:()=>'https://ltc-node.vaultex.network:9332',bytes:[191,120]},
+  doge:{m:'sendrawtransaction',sig:'ECDSA',node:()=>'https://doge-node.vaultex.network:22555',bytes:[191,120]},
+  sol:{m:'sendTransaction',sig:'ed25519',node:()=>'https://api.mainnet.solana.vaultex.network',bytes:[215,80]},
+  xrp:{m:'submit',sig:'ed25519',node:()=>'https://xrpl.vaultex.network:51234',bytes:[120,60]},
+  ada:{m:'POST /api/submit/tx',sig:'Ed25519',node:()=>'https://cardano.vaultex.network',bytes:[290,120]},
+  dot:{m:'author_submitExtrinsic',sig:'sr25519',node:()=>'https://polkadot.vaultex.network',bytes:[140,80]},
+};
+async function broadcastTx(md,net,t){
+  const n=NETS[net],rc=RPC[n.type]||RPC.evm,node=rc.node(net),peers=30+Math.floor(Math.random()*34);
+  const bytes=rc.bytes[0]+Math.floor(Math.random()*rc.bytes[1]);
+  const raw='0x'+(n.type==='evm'?'02':'')+rhex(bytes*2-(n.type==='evm'?2:0));
+  const sig='0x'+rhex(130),nonce=Math.floor(Math.random()*180)+12;
+  md.innerHTML=`<div style="text-align:center;margin-bottom:12px"><div class="spin" style="margin:4px auto 8px;width:22px;height:22px"></div><h3>Broadcasting transaction</h3><p class="muted" style="font-size:12.5px">${n.n} · live mempool</p></div>
+    <div id="blog" style="background:#07090e;border:1px solid var(--line2);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.75;max-height:250px;overflow:auto;white-space:pre-wrap;word-break:break-all;color:#9fb0c8"></div>`;
+  const log=$('#blog',md),C={g:'#41d99b',a:'#6a9bff',m:'#6f7b90',w:'#f5b94c'},pr=`<span style="color:#6f7b90">$</span> `;
+  const put=h=>{const d=document.createElement('div');d.innerHTML=h;log.appendChild(d);log.scrollTop=log.scrollHeight;return d};
+  await sleep(250);
+  put(`${pr}sign --from ${short(t.from,6,4)}${n.type==='evm'?' --nonce '+nonce:''} --algo ${rc.sig}`);
+  await sleep(500);put(`<span style="color:${C.g}">✓</span> signature <span style="color:${C.a}">${short(sig,12,10)}</span>`);
+  await sleep(380);put(`${pr}serialize → raw transaction <span style="color:${C.m}">(${bytes} bytes)</span>`);
+  await sleep(340);put(`<span style="color:${C.a}">${short(raw,18,16)}</span>`);
+  await sleep(540);put(`${pr}POST ${node}`);
+  await sleep(300);put(`&nbsp;&nbsp;<span style="color:${C.m}">→</span> ${rc.m}`);
+  const w=put(`&nbsp;&nbsp;<span style="color:${C.m}">… awaiting node response</span>`);
+  await sleep(850);w.innerHTML=`<span style="color:${C.g}">&lt; 200 OK</span>  result: <span style="color:${C.g}">${short(t.hash,12,12)}</span>`;
+  await sleep(430);put(`<span style="color:${C.w}">●</span> tx entered mempool · <span style="color:${C.w}">pending</span>`);
+  const pc=put(`${pr}propagating to peers… <span id="bpc">0</span>/${peers}`),el=$('#bpc',pc);
+  for(let i=Math.max(2,Math.floor(peers/9));i<peers;i+=Math.max(1,Math.floor(peers/9))){el.textContent=i;await sleep(85)}
+  el.textContent=peers;
+  await sleep(300);put(`<span style="color:${C.g}">✓</span> accepted by ${peers}/${peers} nodes · awaiting ${n.fin?'finality':n.conf+' confirmations'}`);
+  await sleep(560);
+}
+function notify(t,d){S.notifs.unshift({t,d,ts:Date.now(),read:false});S.notifs=S.notifs.slice(0,30);save();const p=$('#pip');if(p)p.classList.remove('hidden')}
+
+/* sign + broadcast flow (send / swap / sell) */
+function signFlow({title,rows,warn,net,exec,successTitle}){
+  const o=openModal(`<button class="x" data-x>×</button><h3>${title}</h3><p class="muted">Review the details and sign with your wallet password.</p>
+    <div style="margin:14px 0 10px">${rows.map(([a,b])=>`<div class="stat"><span>${a}</span><b class="num">${b}</b></div>`).join('')}</div>
+    ${warn?`<div class="warnbox">${warn}</div>`:''}
+    <div class="field"><label>Wallet password</label><div class="input-wrap"><input class="input" id="spw" type="password" placeholder="Enter password to sign"><button type="button" class="eye" data-eye>${I.eye}</button></div></div>
+    <div id="serr"></div>
+    <div class="grid2"><button class="btn btn-ghost" data-x>Reject</button><button class="btn btn-primary" id="sgo">Confirm &amp; sign</button></div>`);
+  $('#spw').focus();$('#spw').onkeydown=e=>{if(e.key==='Enter')$('#sgo').click()};
+  $('#sgo').onclick=async()=>{
+    if(!verifyPw(user,$('#spw').value)){$('#serr').innerHTML='<div class="err">Incorrect password. Transaction not signed.</div>';return}
+    o.dataset.busy=1;const md=$('.modal',o);
+    const t=exec();save();updNavCount();
+    await broadcastTx(md,net,t);
+    delete o.dataset.busy;
+    md.innerHTML=`<div style="text-align:center"><div class="success-ic">${I.check}</div><h3>${successTitle||'Transaction submitted'}</h3><p class="muted" style="margin:6px 0 16px">It will be confirmed by the ${NETS[net].n} network shortly.</p></div>
+      <div class="stat"><span>Status</span><b>${statusPill(t)}</b></div><div class="stat"><span>Transaction hash</span><b class="addr copyable" id="sh">${short(t.hash,10,8)} ${I.copy}</b></div>
+      <div class="grid2" style="margin-top:18px"><button class="btn btn-ghost" id="vact">View activity</button><button class="btn btn-primary" id="done">Done</button></div>`;
+    $('#sh').onclick=()=>copy(t.hash,'Hash');$('#vact').onclick=()=>{closeModal();go('activity')};$('#done').onclick=()=>{closeModal();go(view,vparam)};
+  };
+}
+
+/* ================= APP SHELL ================= */
+const VIEWS={portfolio:['Portfolio',I.port],send:['Send',I.send],receive:['Receive',I.recv],swap:['Swap',I.swap],buy:['Buy & Sell',I.buy],activity:['Activity',I.act],nfts:['NFTs',I.nft],settings:['Settings',I.set]};
+function renderApp(){
+  const chk='0x'+cksum(user.address);
+  $('#root').innerHTML=`<div class="app ${hideBal?'hide-bal':''}" id="app">
+   <aside class="side"><div class="brand">${logoSvg}Vaultex</div>
+     ${Object.entries(VIEWS).map(([k,[n,ic]],i)=>`${i===5?'<div class="side-sep"></div>':''}<button class="nav" data-view="${k}">${ic}${n}${k==='activity'?'<span class="cnt hidden" id="pcnt"></span>':''}</button>`).join('')}
+     <div class="side-foot"><button class="nav" data-act="lock">${I.lock}Lock wallet</button></div>
+   </aside>
+   <div class="main" id="main">
+     <header class="top">
+       <div style="position:relative"><button class="acct" id="acctb">${avatar(user.address,32)}<div><div class="an">${esc(S.name)}</div><div class="aa addr">${shortAddr(user.address)}</div></div><span class="muted">${I.chev}</span></button>
+         <div class="dropdown hidden" id="add" style="left:0"><div class="dd-h"><div class="muted" style="font-size:11.5px;font-weight:600;letter-spacing:.4px;margin-bottom:10px">ACCOUNT</div><div style="display:flex;gap:10px;align-items:center">${avatar(user.address,36)}<div style="min-width:0"><div style="font-weight:600">${esc(S.name)}</div><div class="addr muted copyable" data-copy="${chk}">${short(chk,8,6)} ${I.copy}</div></div></div><div style="margin-top:10px"><span class="pill ok">${I.shield} Self-custody</span></div></div>
+           <button class="dd-i" data-view="receive">${sz(I.recv)} Show addresses</button><button class="dd-i" data-view="settings">${sz(I.key)} Export private key</button><button class="dd-i" data-act="lock">${sz(I.lock)} Lock wallet</button><button class="dd-i" data-act="forget" style="color:#ff7a82">Remove wallet from this device</button></div></div>
+       <span class="sp"></span>
+       <div class="pillbtn hide-m" title="Ethereum gas price">⛽ <span id="gasv">${GAS.toFixed(1)} gwei</span></div>
+       <div class="pillbtn hide-m"><span class="dot"></span>10 networks</div>
+       <button class="icon-btn" data-act="hide" title="Hide balances" id="hideb">${hideBal?I.eyeoff:I.eye}</button>
+       <div style="position:relative"><button class="icon-btn" id="bellb"><span style="width:18px;height:18px;display:block">${I.bell}</span><span class="pip ${S.notifs.some(n=>!n.read)?'':'hidden'}" id="pip"></span></button><div class="dropdown hidden" id="ndd" style="right:0"></div></div>
+     </header>
+     <div class="content" id="view"></div>
+   </div>
+   <nav class="mnav">${['portfolio','send','receive','swap','activity'].map(k=>`<button data-view="${k}">${VIEWS[k][1]}${VIEWS[k][0]}</button>`).join('')}</nav></div>`;
+  $('#acctb').onclick=e=>{e.stopPropagation();$('#ndd').classList.add('hidden');$('#add').classList.toggle('hidden')};
+  $('#bellb').onclick=e=>{e.stopPropagation();$('#add').classList.add('hidden');const d=$('#ndd');d.classList.toggle('hidden');if(!d.classList.contains('hidden')){d.innerHTML=`<div class="dd-h row-between"><b>Notifications</b><span class="muted" style="font-size:12px">${S.notifs.length}</span></div><div style="max-height:380px;overflow:auto">${S.notifs.slice(0,12).map(n=>`<div class="notif"><span class="dot" style="margin-top:6px;${n.read?'background:var(--line2);box-shadow:none':'background:var(--accent);box-shadow:0 0 0 3px #3d7bfd30'}"></span><div><div class="t">${esc(n.t)}</div><div class="d">${esc(n.d)}</div><div class="w">${ago(n.ts)}</div></div></div>`).join('')||'<div class="empty">No notifications</div>'}</div>`;S.notifs.forEach(n=>n.read=true);save();$('#pip').classList.add('hidden')}};
+  $$('#add [data-copy]').forEach(el=>el.onclick=e=>{e.stopPropagation();copy(el.dataset.copy,'Address')});
+  go(view,vparam);updStatus();updNavCount();bumpIdle();
+}
+function updNavCount(){const el=$('#pcnt');if(!el)return;const n=pendingCount();el.textContent=n;el.classList.toggle('hidden',!n)}
+document.addEventListener('click',e=>{
+  if(!user)return;
+  const v=e.target.closest('[data-view]');if(v&&!v.closest('#ov')){go(v.dataset.view,v.dataset.p||null);$$('.dropdown').forEach(d=>d.classList.add('hidden'));return}
+  const a=e.target.closest('[data-act]');if(a&&ACT[a.dataset.act]){ACT[a.dataset.act](a);return}
+  if(!e.target.closest('.dropdown'))$$('.dropdown').forEach(d=>d.classList.add('hidden'));
+});
+function go(v,p){
+  view=v;vparam=p||null;charts.length=0;
+  $$('.nav[data-view],.mnav [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v||(v==='asset'&&b.dataset.view==='portfolio')));
+  document.title=(v==='asset'?COIN[vparam].n:VIEWS[v][0])+' · Vaultex Wallet';
+  $('#view').innerHTML=R[v]();if(A[v])A[v]();const m=$('#main');if(m)m.scrollTop=0;liveDom();
+}
+
+/* ================= VIEWS ================= */
+const R={},A={};
+const rangeBtns=(cur,act)=>`<div class="ranges">${Object.keys(RANGES).map(r=>`<button data-act="${act}" data-r="${r}" class="${r===cur?'on':''}">${r}</button>`).join('')}</div>`;
+const quick=(act)=>[['send','Send',I.send],['receive','Receive',I.recv],['swap','Swap',I.swap],['buy','Buy',I.buy]].map(([k,n,ic])=>act?`<button class="qa" data-act="assetgo" data-v="${k}"><span class="qi">${ic}</span>${n}</button>`:`<button class="qa" data-view="${k}"><span class="qi">${ic}</span>${n}</button>`).join('');
+R.portfolio=()=>{
+  const own=owned(),tot=total(),nets=[...new Set(own.map(c=>c.net))];
+  if(netFilter!=='all'&&!nets.includes(netFilter))netFilter='all';
+  const list=own.filter(c=>netFilter==='all'||c.net===netFilter);
+  return`<div class="g2">
+   <section class="card">
+     <div class="row-between" style="align-items:flex-start;flex-wrap:wrap">
+       <div><div class="lbl">Total balance</div><div class="big num sens" id="totalBal">${fmtUSD(tot)}</div><div class="chgline num sens" id="portChg"></div></div>${rangeBtns(range,'range')}</div>
+     <div class="chart-wrap"><canvas id="pchart" style="height:240px"></canvas><div class="tip hidden"></div></div>
+   </section>
+   <section class="card"><h3 style="margin-bottom:14px">Quick actions</h3>
+     <div class="qgrid">${quick()}</div>
+     <div class="breakdown" style="margin-top:16px">
+       <div class="stat"><span>Assets</span><b>${own.length}</b></div>
+       <div class="stat"><span>Networks</span><b>${nets.length}</b></div>
+       <div class="stat"><span>NFTs</span><b>${S.nfts.length}</b></div>
+       <div class="stat"><span>Pending transactions</span><b id="pendv">${pendingCount()}</b></div>
+       <div class="stat"><span>Status</span><b class="up">Synced</b></div>
+     </div>
+   </section>
+   <section class="card span2"><div class="card-h"><h3>Assets</h3>
+       <select class="sel sm" id="netf"><option value="all">All networks</option>${nets.map(n=>`<option value="${n}" ${n===netFilter?'selected':''}>${NETS[n].n}</option>`).join('')}</select></div>
+     ${list.length?`<div class="scroll-x"><table><thead><tr><th>Asset</th><th class="r">Price</th><th class="r hide-m">24h</th><th class="r hide-m">7d</th><th class="r">Balance</th><th class="r hide-m">Allocation</th></tr></thead><tbody>
+     ${list.map(c=>{const pct=tot?holdVal(c.s)/tot*100:0;return`<tr class="click" data-view="asset" data-p="${c.s}"><td><div class="asset">${ci(c.s)}<div><div class="n">${c.n}</div><div class="s">${c.s} · ${netName(c.s)}</div></div></div></td><td class="r num" data-price="${c.s}">${fmtUSD(P[c.s])}</td><td class="r num hide-m" data-chg="${c.s}"></td><td class="r hide-m">${spark(c.s)}</td><td class="r"><div class="num sens" style="font-weight:600" data-hv="${c.s}">${fmtUSD(holdVal(c.s))}</div><div class="muted num sens" style="font-size:12px">${fmtAmt(c.s,bal(c.s))} ${c.s}</div></td><td class="r hide-m num"><span class="allocbar"><i style="width:${pct.toFixed(1)}%;background:${c.col}"></i></span>${pct.toFixed(1)}%</td></tr>`}).join('')}</tbody></table></div>`
+     :`<div class="empty"><div style="font-weight:600;color:var(--text);margin-bottom:6px">Your wallet is empty</div>Receive crypto from another wallet or buy with a card.<div style="margin-top:14px;display:flex;gap:8px;justify-content:center"><button class="btn btn-primary" data-view="receive">Receive</button><button class="btn btn-ghost" data-view="buy">Buy crypto</button></div></div>`}
+   </section>
+   <section class="card span2"><div class="card-h"><h3>Recent activity</h3><button class="btn btn-ghost" style="padding:6px 12px" data-view="activity">View all</button></div>${txList(S.tx.slice(0,5),true)}</section>
+  </div>`;
+};
+A.portfolio=()=>{regChart('pchart',()=>portSeries(range),chartOpts(range,{base:true,sens:true}));updPortChg();const nf=$('#netf');if(nf)nf.onchange=()=>{netFilter=nf.value;go('portfolio')}};
+function updPortChg(){const el=$('#portChg');if(!el)return;const v=portSeries(range),d=v[v.length-1]-v[0],p=v[0]?d/v[0]*100:0;el.className='chgline num sens '+(d>=0?'up':'down');el.innerHTML=`${d>=0?'▲':'▼'} ${fmtUSD(Math.abs(d))} (${fmtPct(p).replace('-','')}) <span class="muted" style="font-weight:500">${{'1D':'Today','1W':'Past week','1M':'Past month','1Y':'Past year'}[range]}</span>`}
+
+R.asset=()=>{
+  const s=vparam,c=COIN[s],net=NETS[c.net],ad=addrFor(c.net),txs=S.tx.filter(t=>t.sym===s||t.toSym===s);
+  return`<button class="muted" data-view="portfolio" style="display:flex;align-items:center;gap:6px;margin-bottom:14px;font-weight:500">${I.back}Portfolio</button>
+  <div class="g2"><section class="card">
+    <div class="row-between" style="flex-wrap:wrap"><div class="asset">${ci(s,'lg')}<div><div style="font-size:18px;font-weight:700">${c.n} <span class="muted" style="font-weight:500;font-size:14px">${s}</span></div><div style="display:flex;gap:10px;align-items:baseline"><span class="num" style="font-size:24px;font-weight:700" data-price="${s}">${fmtUSD(P[s])}</span><span class="num" data-chg="${s}"></span></div></div></div>${rangeBtns(aRange,'arange')}</div>
+    <div class="chart-wrap"><canvas id="achart" style="height:230px"></canvas><div class="tip hidden"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px">
+      <div><div class="muted" style="font-size:12px">Market cap</div><div class="num" style="font-weight:600">${fmtCompact(P[s]*c.sup)}</div></div>
+      <div><div class="muted" style="font-size:12px">Volume (24h)</div><div class="num" style="font-weight:600">${fmtCompact(P[s]*c.sup*(0.018+strSeed(s)%40/1000))}</div></div>
+      <div><div class="muted" style="font-size:12px">Circulating supply</div><div class="num" style="font-weight:600">${new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(c.sup)} ${s}</div></div>
+      <div><div class="muted" style="font-size:12px">Network</div><div style="font-weight:600">${netName(s)}</div></div></div>
+  </section>
+  <section class="card"><div class="lbl">Your balance</div><div class="big num sens" style="font-size:30px" data-hv="${s}">${fmtUSD(holdVal(s))}</div><div class="muted num sens" style="margin-top:2px">${fmtAmt(s,bal(s))} ${s}</div>
+    <div class="qgrid" style="margin-top:18px">${quick(true)}</div>
+    <div class="breakdown" style="margin-top:16px"><div class="muted" style="font-size:12px;margin:6px 0">Your ${net.n} address</div><div class="addr copyable" data-act="copyaddr" data-a="${ad}" style="word-break:break-all;line-height:1.5">${ad} ${I.copy}</div></div>
+  </section>
+  <section class="card span2"><div class="card-h"><h3>${s} activity</h3></div>${txList(txs.slice(0,8),true)}</section></div>`;
+};
+A.asset=()=>regChart('achart',()=>getPath(vparam,aRange).map(r=>r*P[vparam]),chartOpts(aRange));
+
+/* ---- SEND ---- */
+const sendSt={sym:null,to:'',amt:'',speed:'avg',memo:''};
+const assetOpts=(sel,list)=>list.map(c=>`<option value="${c.s}" ${c.s===sel?'selected':''}>${c.n} (${c.s}) — ${fmtAmt(c.s,bal(c.s))}</option>`).join('');
+R.send=()=>{
+  const own=owned();if(!own.length)return`<div class="card empty" style="max-width:640px">You don’t have any assets to send yet.<div style="margin-top:14px"><button class="btn btn-primary" data-view="receive">Receive crypto</button></div></div>`;
+  if(!sendSt.sym||!bal(sendSt.sym))sendSt.sym=own[0].s;const s=sendSt.sym,c=COIN[s],net=NETS[c.net];
+  const cts=S.contacts.filter(x=>x.net===c.net);
+  return`<div class="g-form"><section class="card"><h3 style="margin-bottom:18px">Send crypto</h3>
+    <div class="field"><label>Asset</label><select class="sel" id="ssym">${assetOpts(s,own)}</select></div>
+    <div class="field"><label><span>Recipient address</span><span class="dim">${netName(s)}</span></label><div class="input-wrap"><input class="input addr" id="sto" placeholder="${PLACE[net.type]}" spellcheck="false" autocomplete="off" value="${esc(sendSt.to)}" style="padding-right:76px"><span class="suffix"><button type="button" id="spaste">PASTE</button></span></div><div class="hint" id="sval"></div>
+      ${cts.length?`<div class="chips"><span class="dim" style="font-size:12px;padding:5px 2px">Address book:</span>${cts.map(x=>`<button type="button" class="chip" data-ct="${esc(x.addr)}">${esc(x.name)} · <span class="addr">${short(x.addr,5,4)}</span></button>`).join('')}</div>`:''}</div>
+    ${c.net==='xrpl'?`<div class="field"><label><span>Destination tag</span><span class="dim">optional</span></label><input class="input" id="smemo" inputmode="numeric" placeholder="e.g. 104528" value="${esc(sendSt.memo)}"></div>`:''}
+    <div class="field"><label><span>Amount</span><span>Available: <b class="num sens" style="color:var(--text)">${fmtAmt(s,bal(s))} ${s}</b></span></label><div class="input-wrap"><input class="input num" id="samt" inputmode="decimal" placeholder="0.00" value="${esc(sendSt.amt)}" style="font-size:18px;font-weight:600;padding-right:110px"><span class="suffix">${s}<button type="button" id="smax">MAX</button></span></div><div class="hint num" id="susd">≈ $0.00</div></div>
+    <div class="field"><label><span>Network fee</span><span class="dim">Paid in ${net.nat}</span></label><div class="speeds" id="speeds"></div></div>
+  </section>
+  <aside><section class="card"><h3 style="margin-bottom:8px">Summary</h3><div id="ssum"></div><div id="serr2" style="margin-top:10px"></div><button class="btn btn-primary btn-block" id="srev" style="margin-top:12px" disabled>Review transaction</button>
+    <p class="dim" style="font-size:11.5px;margin-top:12px;line-height:1.5">Blockchain transactions are irreversible. Always double-check the recipient address and network.</p></section></aside></div>`;
+};
+A.send=()=>{
+  if(!$('#ssym'))return;
+  $('#ssym').onchange=e=>{sendSt.sym=e.target.value;sendSt.to='';sendSt.amt='';sendSt.memo='';go('send')};
+  const to=$('#sto'),am=$('#samt');
+  to.oninput=()=>{sendSt.to=to.value.trim();updSend()};
+  am.oninput=()=>{am.value=am.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');sendSt.amt=am.value;updSend()};
+  if($('#smemo'))$('#smemo').oninput=e=>{sendSt.memo=e.target.value.replace(/\D/g,'');e.target.value=sendSt.memo};
+  $('#spaste').onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t){to.value=t.trim();sendSt.to=to.value;updSend()}}catch(e){toast('Clipboard unavailable','Paste the address with Ctrl+V.','i')}};
+  $$('[data-ct]').forEach(b=>b.onclick=()=>{to.value=b.dataset.ct;sendSt.to=to.value;updSend()});
+  $('#smax').onclick=()=>{const s=sendSt.sym,c=COIN[s],f=feeFor(s,sendSt.speed);let v=bal(s);if(!c.std)v=Math.max(0,v-f.amt*1.02);am.value=(Math.floor(v*10**c.dp)/10**c.dp).toString();sendSt.amt=am.value;updSend()};
+  $('#srev').onclick=reviewSend;updSend();
+};
+function sendCheck(){
+  const s=sendSt.sym,c=COIN[s],net=NETS[c.net],a=parseFloat(sendSt.amt)||0,f=feeFor(s,sendSt.speed);
+  const valid=VALID[net.type].test(sendSt.to),self=!!sendSt.to&&sendSt.to.toLowerCase()===addrFor(c.net).toLowerCase();
+  let err='';
+  if(a>bal(s)+1e-12)err=`Insufficient ${s} balance.`;
+  else if(!c.std&&a>0&&a+f.amt>bal(s)+1e-12)err=`Not enough ${s} to cover the network fee.`;
+  else if(c.std&&a>0&&f.amt>bal(net.nat))err=`You need ${fmtAmt(net.nat,f.amt,6)} ${net.nat} to pay the network fee.`;
+  return{s,c,net,a,f,valid,self,err,ok:valid&&!self&&a>0&&!err};
+}
+function updSend(){
+  const v=$('#sval'),to=$('#sto');if(!v)return;const k=sendCheck();
+  to.classList.remove('good','bad');
+  if(!sendSt.to){v.className='hint';v.textContent=''}
+  else if(k.self){v.className='hint bad';v.textContent='✕ This is your own address.';to.classList.add('bad')}
+  else if(k.valid){const ct=S.contacts.find(x=>x.addr===sendSt.to);v.className='hint ok';v.textContent=`✓ Valid ${k.net.n} address${ct?' · '+ct.name:''}`;to.classList.add('good')}
+  else{v.className='hint bad';v.textContent=`✕ Invalid ${k.net.n} address`;to.classList.add('bad')}
+  $('#susd').textContent=`≈ ${fmtUSD(k.a*P[k.s])}`;
+  $('#speeds').innerHTML=['slow','avg','fast'].map(sp=>{const f=feeFor(k.s,sp);return`<button type="button" class="speed ${sp===sendSt.speed?'on':''}" data-sp="${sp}"><div class="sn">${SPEED[sp].n}</div><div class="se">${f.eta}</div><div class="sf num">${fmtAmt(f.sym,f.amt,8)} ${f.sym}</div><div class="su num">${fmtUSD(f.usd)}</div></button>`}).join('');
+  $$('[data-sp]').forEach(b=>b.onclick=()=>{sendSt.speed=b.dataset.sp;updSend()});
+  $('#ssum').innerHTML=`<div class="stat"><span>You send</span><b class="num">${fmtAmt(k.s,k.a)} ${k.s}</b></div><div class="stat"><span>Value</span><b class="num">${fmtUSD(k.a*P[k.s])}</b></div><div class="stat"><span>Network fee</span><b class="num">${fmtAmt(k.f.sym,k.f.amt,8)} ${k.f.sym}</b></div><div class="stat"><span>Fee details</span><b class="num muted" style="font-weight:500">${k.f.det||'Standard'}</b></div><div class="stat" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Total</span><b class="num">${fmtUSD(k.a*P[k.s]+k.f.usd)}</b></div>`;
+  $('#serr2').innerHTML=k.err?`<div class="err" style="margin:0">${k.err}</div>`:'';
+  $('#srev').disabled=!k.ok;
+}
+function reviewSend(){
+  const k=sendCheck();if(!k.ok)return;const from=addrFor(k.c.net),to=sendSt.to,memo=sendSt.memo,speed=sendSt.speed,ct=S.contacts.find(x=>x.addr===to);
+  signFlow({title:`Send ${k.s}`,net:k.c.net,
+    rows:[['Amount',`${fmtAmt(k.s,k.a)} ${k.s} <span class="muted">(${fmtUSD(k.a*P[k.s])})</span>`],['From',`<span class="addr">${short(from,8,6)}</span>`],['To',`<span class="addr">${short(to,8,6)}</span>${ct?' · '+esc(ct.name):''}`],['Network',netName(k.s)],...(memo?[['Destination tag',esc(memo)]]:[]),['Network fee',`${fmtAmt(k.f.sym,k.f.amt,8)} ${k.f.sym} <span class="muted">(${fmtUSD(k.f.usd)})</span>`],['Speed',`${SPEED[speed].n} · ${k.f.eta}`]],
+    warn:ct?null:'First time sending to this address. Make sure it’s correct — crypto sent to the wrong address can’t be recovered.',
+    exec:()=>{debit(k.s,k.a);debit(k.net.nat,k.f.amt);sendSt.to='';sendSt.amt='';sendSt.memo='';
+      return addTx({type:'send',sym:k.s,amt:k.a,price:P[k.s],from,to,fee:+k.f.amt.toPrecision(4),feeSym:k.f.sym,memo:memo||null,label:ct?ct.name:null})}});
+}
+
+/* ---- RECEIVE ---- */
+let recvSym='BTC';
+R.receive=()=>{const c=COIN[recvSym],net=NETS[c.net],a=addrFor(c.net),deps=S.tx.filter(t=>(t.type==='receive'||t.type==='buy')&&t.net===c.net).slice(0,5);
+  return`<div class="g-form"><section class="card" style="text-align:center"><h3 style="text-align:left;margin-bottom:18px">Receive crypto</h3>
+    <div class="field" style="text-align:left"><label>Asset</label><select class="sel" id="rsym">${COINS.map(x=>`<option value="${x.s}" ${x.s===recvSym?'selected':''}>${x.n} (${x.s}) — ${netName(x.s)}</option>`).join('')}</select></div>
+    <div class="qr-wrap">${qrSvg(a,210)}<span class="qlogo">${ci(recvSym,'lg',false)}</span></div>
+    <div class="muted" style="font-size:13px">Your ${c.n} address · ${netName(recvSym)}</div>
+    <div class="addr-box"><b>${a.slice(0,6)}</b>${a.slice(6,-6)}<b>${a.slice(-6)}</b></div>
+    <div class="grid2"><button class="btn btn-primary" data-act="copyaddr" data-a="${a}">${I.copy} Copy address</button><button class="btn btn-ghost" data-act="copyaddr" data-a="${a}">Share</button></div>
+    <div class="warnbox" style="text-align:left;margin:16px 0 0">Only send <b>${c.s}</b>${c.std?` (${c.std})`:''} on the <b>${net.n}</b> network to this address. Sending any other asset or network may result in permanent loss.</div>
+  </section>
+  <aside><section class="card"><h3 style="margin-bottom:6px">Recent deposits · ${net.n}</h3>${txList(deps,true)}</section>
+  <section class="card" style="margin-top:18px"><h3 style="margin-bottom:10px">About this address</h3><p class="muted" style="font-size:13px;line-height:1.55">${net.type==='evm'?`On ${net.n}, this same address also receives ${COINS.filter(x=>x.net===c.net&&x.s!==c.s).map(x=>x.s).join(', ')||'tokens'} and NFTs.`:`Each network has its own address. Select another asset above to see its address.`}</p></section></aside></div>`};
+A.receive=()=>{$('#rsym').onchange=e=>{recvSym=e.target.value;go('receive')}};
+
+/* ---- SWAP ---- */
+const swapSt={from:null,to:'ETH',amt:'',slip:0.5};let swapTimer=null,swapLeft=20;
+R.swap=()=>{const own=owned();if(!own.length)return`<div class="card empty" style="max-width:640px">You need assets in your wallet to swap.<div style="margin-top:14px"><button class="btn btn-primary" data-view="buy">Buy crypto</button></div></div>`;
+  if(!swapSt.from||!bal(swapSt.from))swapSt.from=own[0].s;if(swapSt.to===swapSt.from)swapSt.to=COINS.find(c=>c.s!==swapSt.from).s;const f=swapSt.from,t=swapSt.to;
+  return`<div class="g-form"><section class="card"><div class="card-h"><h3>Swap</h3><div style="display:flex;gap:6px;align-items:center"><span class="muted" style="font-size:12px">Slippage</span>${[0.5,1,3].map(v=>`<button class="chip ${swapSt.slip===v?'on':''}" data-slip="${v}">${v}%</button>`).join('')}</div></div>
+    <div class="swapbox"><div class="r1"><span>You pay</span><span>Balance: <span class="num sens">${fmtAmt(f,bal(f))}</span> <button class="mini-btn" id="wmaxs">MAX</button></span></div><div class="r2"><input id="wamt" class="num" inputmode="decimal" placeholder="0" value="${esc(swapSt.amt)}"><select class="sel" id="wfrom">${own.map(c=>`<option value="${c.s}" ${c.s===f?'selected':''}>${c.s}</option>`).join('')}</select></div><div class="muted num" style="font-size:12.5px;margin-top:4px" id="wfu">$0.00</div></div>
+    <button class="flip" id="wflip" title="Switch">${sz(I.swap)}</button>
+    <div class="swapbox"><div class="r1"><span>You receive</span><span>Balance: <span class="num sens">${fmtAmt(t,bal(t))}</span></span></div><div class="r2"><input id="wout" class="num" readonly placeholder="0" tabindex="-1"><select class="sel" id="wto">${COINS.filter(c=>c.s!==f).map(c=>`<option value="${c.s}" ${c.s===t?'selected':''}>${c.s}</option>`).join('')}</select></div><div class="muted num" style="font-size:12.5px;margin-top:4px" id="wtu">$0.00</div></div>
+    <div class="breakdown" id="wdet"></div><div id="werr" style="margin-top:10px"></div>
+    <button class="btn btn-primary btn-block" id="wrev" style="margin-top:12px" disabled>Review swap</button></section>
+  <aside><section class="card"><h3 style="margin-bottom:10px">How swaps work</h3><p class="muted" style="font-size:13px;line-height:1.6">Vaultex compares liquidity across decentralized exchanges and bridges to find the best route. Swaps execute on-chain from your own wallet — your funds never leave your custody.</p>
+    <div class="breakdown"><div class="stat"><span>Service fee</span><b>0.875%</b></div><div class="stat"><span>Liquidity sources</span><b>34</b></div><div class="stat"><span>Quote refreshes in</span><b id="wtimer" class="num">20s</b></div></div></section></aside></div>`};
+function swapQuote(){const f=swapSt.from,t=swapSt.to,a=parseFloat(swapSt.amt)||0,usd=a*P[f],svc=usd*0.00875,impact=Math.min(4,usd/2.5e6*100),out=(usd-svc)*(1-impact/100)/P[t],cross=COIN[f].net!==COIN[t].net,nf=feeFor(f,'avg','swap');
+  return{f,t,a,usd,svc,impact,out,min:out*(1-swapSt.slip/100),cross,nf,rate:P[f]/P[t]}}
+A.swap=()=>{
+  clearInterval(swapTimer);if(!$('#wamt'))return;
+  $('#wamt').oninput=e=>{e.target.value=e.target.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');swapSt.amt=e.target.value;updSwap()};
+  $('#wfrom').onchange=e=>{swapSt.from=e.target.value;swapSt.amt='';go('swap')};$('#wto').onchange=e=>{swapSt.to=e.target.value;go('swap')};
+  $('#wflip').onclick=()=>{if(!bal(swapSt.to))return toast('Can’t switch',`You don’t hold any ${swapSt.to}.`,'e');[swapSt.from,swapSt.to]=[swapSt.to,swapSt.from];swapSt.amt='';go('swap')};
+  $('#wmaxs').onclick=()=>{const f=swapSt.from,c=COIN[f];let v=bal(f);if(!c.std)v=Math.max(0,v-feeFor(f,'avg','swap').amt*1.05);swapSt.amt=(Math.floor(v*10**c.dp)/10**c.dp).toString();$('#wamt').value=swapSt.amt;updSwap()};
+  $$('[data-slip]').forEach(b=>b.onclick=()=>{swapSt.slip=+b.dataset.slip;$$('[data-slip]').forEach(x=>x.classList.toggle('on',x===b));updSwap()});
+  $('#wrev').onclick=reviewSwap;swapLeft=20;
+  swapTimer=setInterval(()=>{if(view!=='swap'||!$('#wtimer')){clearInterval(swapTimer);return}swapLeft--;if(swapLeft<=0){swapLeft=20;if(!$('#ov'))updSwap()}$('#wtimer').textContent=swapLeft+'s'},1000);
+  updSwap();
+};
+function updSwap(){if(!$('#wdet'))return;const q=swapQuote(),natN=NETS[COIN[q.f].net].nat;
+  $('#wout').value=q.a?fmtAmt(q.t,q.out).replace(/,/g,''):'';$('#wfu').textContent=fmtUSD(q.usd);$('#wtu').textContent=fmtUSD(q.out*P[q.t]);
+  $('#wdet').innerHTML=`<div class="stat"><span>Rate</span><b class="num">1 ${q.f} = ${fmtAmt(q.t,q.rate,q.rate<1?6:4)} ${q.t}</b></div><div class="stat"><span>Price impact</span><b class="num ${q.impact>1?'down':''}">${q.impact<0.01?'<0.01':q.impact.toFixed(2)}%</b></div><div class="stat"><span>Minimum received</span><b class="num">${fmtAmt(q.t,q.min)} ${q.t}</b></div><div class="stat"><span>Service fee (0.875%)</span><b class="num">${fmtUSD(q.svc)}</b></div><div class="stat"><span>Network fee</span><b class="num">${fmtAmt(natN,q.nf.amt,8)} ${natN} <span class="muted">(${fmtUSD(q.nf.usd)})</span></b></div><div class="stat"><span>Route</span><b>${q.cross?`${NETS[COIN[q.f].net].n} → ${NETS[COIN[q.t].net].n} via Vaultex Bridge`:'Vaultex Aggregator · 2 hops'}</b></div>`;
+  let err='';if(q.a>bal(q.f)+1e-12)err=`Insufficient ${q.f} balance.`;else if(q.a>0&&q.nf.amt>bal(natN)-(natN===q.f?q.a:0)+1e-12)err=`Not enough ${natN} for the network fee.`;else if(q.a>0&&q.usd<5)err='Minimum swap amount is $5.00.';
+  $('#werr').innerHTML=err?`<div class="err" style="margin:0">${err}</div>`:'';$('#wrev').disabled=!!err||!(q.a>0);
+}
+function reviewSwap(){const q=swapQuote(),natN=NETS[COIN[q.f].net].nat,slip=swapSt.slip;
+  signFlow({title:'Confirm swap',net:COIN[q.f].net,successTitle:'Swap submitted',
+    rows:[['You pay',`${fmtAmt(q.f,q.a)} ${q.f}`],['You receive (est.)',`${fmtAmt(q.t,q.out)} ${q.t}`],['Minimum received',`${fmtAmt(q.t,q.min)} ${q.t}`],['Slippage tolerance',slip+'%'],['Network fee',`${fmtAmt(natN,q.nf.amt,8)} ${natN}`],['Route',q.cross?'Cross-chain via Vaultex Bridge':'Vaultex Aggregator']],
+    warn:q.cross?'Cross-chain swaps can take a few minutes to arrive on the destination network.':null,
+    exec:()=>{debit(q.f,q.a);debit(natN,q.nf.amt);swapSt.amt='';
+      return addTx({type:'swap',sym:q.f,amt:q.a,toSym:q.t,toAmt:q.out*(1-Math.random()*slip/400),price:P[q.f],from:addrFor(COIN[q.f].net),to:ROUTER,fee:+q.nf.amt.toPrecision(4),feeSym:natN,label:'Vaultex Aggregator Router'})}});
+}
+
+/* ---- BUY & SELL ---- */
+let bsMode='buy',buySym='BTC',sellSym=null,payM='card';
+const PAY={card:{n:'Visa debit',d:'•••• 0392 · Instant',fee:0.0149,min:3.99,ic:'<span class="pi" style="background:#1a1f71;color:#fff">VISA</span>'},bank:{n:'Bank transfer (ACH)',d:'•••• 4821 · 1–3 days',fee:0.005,min:0,ic:'<span class="pi" style="background:#0f3d2e;color:#41d99b">ACH</span>'}};
+R.buy=()=>{const own=owned();if(!sellSym||!bal(sellSym))sellSym=own[0]?own[0].s:null;
+  const tabs=`<div class="tabs" style="max-width:320px">${['buy','sell'].map(m=>`<button data-act="bsm" data-m="${m}" class="${m===bsMode?'on':''}">${m==='buy'?'Buy':'Sell'}</button>`).join('')}</div>`;
+  if(bsMode==='buy')return`${tabs}<div class="g-form"><section class="card"><h3 style="margin-bottom:16px">Buy crypto</h3>
+    <div class="field"><label>Asset</label><select class="sel" id="bsym">${COINS.map(c=>`<option value="${c.s}" ${c.s===buySym?'selected':''}>${c.n} (${c.s}) — ${netName(c.s)}</option>`).join('')}</select></div>
+    <div class="amt-box"><input class="amt-big num" id="bamt" inputmode="decimal" placeholder="$0"><div class="muted num" id="beq">≈ 0 ${buySym}</div></div>
+    <div class="chips" style="margin:0 0 16px">${[100,250,500,1000].map(v=>`<button class="chip" data-bq="${v}">$${v.toLocaleString()}</button>`).join('')}</div>
+    <div class="field"><label>Payment method</label>${Object.entries(PAY).map(([k,p])=>`<label class="pay ${k===payM?'on':''}"><input type="radio" name="pm" value="${k}" ${k===payM?'checked':''}>${p.ic}<div style="flex:1"><div style="font-weight:600">${p.n}</div><div class="muted" style="font-size:12px">${p.d}</div></div><span class="muted" style="font-size:12px">${(p.fee*100).toFixed(2)}% fee</span></label>`).join('')}</div>
+  </section><aside><section class="card"><h3 style="margin-bottom:8px">Order summary</h3><div id="bsum"></div><div id="berr" style="margin-top:10px"></div><button class="btn btn-primary btn-block" id="bgo" style="margin-top:12px" disabled>Buy ${buySym}</button>
+    <p class="dim" style="font-size:11.5px;margin-top:12px;line-height:1.5">Purchases are processed by Vaultex Pay. Crypto is delivered directly to your wallet address on ${NETS[COIN[buySym].net].n}.</p></section></aside></div>`;
+  if(!sellSym)return tabs+'<div class="card empty" style="max-width:640px">You don’t have any assets to sell.</div>';
+  return`${tabs}<div class="g-form"><section class="card"><h3 style="margin-bottom:16px">Sell crypto</h3>
+    <div class="field"><label>Asset</label><select class="sel" id="ssym2">${assetOpts(sellSym,own)}</select></div>
+    <div class="amt-box"><input class="amt-big num" id="slamt" inputmode="decimal" placeholder="0"><div class="muted num" id="sleq">${sellSym} · ≈ $0.00</div></div>
+    <div class="chips" style="margin:0 0 16px">${[0.25,0.5,0.75,1].map(v=>`<button class="chip" data-sq="${v}">${v===1?'Max':v*100+'%'}</button>`).join('')}</div>
+    <div class="field"><label>Payout to</label><div class="pay on">${PAY.bank.ic}<div style="flex:1"><div style="font-weight:600">Bank account</div><div class="muted" style="font-size:12px">Checking •••• 4821 · 1–3 business days</div></div></div></div>
+  </section><aside><section class="card"><h3 style="margin-bottom:8px">Order summary</h3><div id="slsum"></div><div id="slerr" style="margin-top:10px"></div><button class="btn btn-red btn-block" id="slgo" style="margin-top:12px" disabled>Continue</button></section></aside></div>`};
+A.buy=()=>{
+  if(bsMode==='buy'){
+    const am=$('#bamt');const upd=()=>{const v=parseFloat(am.value)||0,p=PAY[payM],fee=v?Math.max(p.min,v*p.fee):0,nf=v?feeFor(buySym,'avg').usd:0,got=Math.max(0,(v-fee-nf)/P[buySym]);
+      $('#beq').textContent=`≈ ${fmtAmt(buySym,got)} ${buySym}`;
+      $('#bsum').innerHTML=`<div class="stat"><span>${buySym} price</span><b class="num">${fmtUSD(P[buySym])}</b></div><div class="stat"><span>Processing fee</span><b class="num">${fmtUSD(fee)}</b></div><div class="stat"><span>Network fee</span><b class="num">${fmtUSD(nf)}</b></div><div class="stat"><span>You receive</span><b class="num">${fmtAmt(buySym,got)} ${buySym}</b></div><div class="stat"><span>Deliver to</span><b class="addr">${short(addrFor(COIN[buySym].net),6,4)}</b></div><div class="stat" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>Total</span><b class="num">${fmtUSD(v)}</b></div>`;
+      let err='';if(v>0&&v<20)err='Minimum purchase is $20.00.';else if(v>20000)err='Maximum purchase is $20,000.00 per day.';
+      $('#berr').innerHTML=err?`<div class="err" style="margin:0">${err}</div>`:'';$('#bgo').disabled=!!err||!v;return{v,fee,nf,got}};
+    am.oninput=()=>{am.value=am.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');upd()};
+    $$('[data-bq]').forEach(b=>b.onclick=()=>{am.value=b.dataset.bq;upd()});
+    $('#bsym').onchange=e=>{buySym=e.target.value;go('buy')};
+    $$('input[name=pm]').forEach(r=>r.onchange=()=>{payM=r.value;$$('.pay').forEach(x=>x.classList.toggle('on',x.contains(r)));upd()});
+    $('#bgo').onclick=async()=>{const q=upd(),p=PAY[payM],sym=buySym,net=COIN[sym].net;
+      const o=openModal(`<div style="text-align:center"><div class="big-spin"></div><h3>Processing payment</h3><p class="muted">${fmtUSD(q.v)} · ${p.n} ${p.d.split(' · ')[0]}</p></div>${stepsHtml('bp',[payM==='card'?'Authorizing card':'Initiating bank transfer','Payment approved',`Sending ${sym} to your wallet`])}`);o.dataset.busy=1;
+      await runSteps('bp',3,[1200,900,900]);
+      const t=addTx({type:'buy',sym,amt:q.got,price:P[sym],usd:q.v,provider:`${p.n} ${p.d.split(' · ')[0]}`,from:randAddr(net),to:addrFor(net)});save();updNavCount();
+      notify('Purchase approved',`${fmtAmt(sym,q.got)} ${sym} for ${fmtUSD(q.v)} is on its way to your wallet.`);delete o.dataset.busy;
+      $('.modal',o).innerHTML=`<div style="text-align:center"><div class="success-ic">${I.check}</div><h3>Purchase complete</h3><p class="muted" style="margin:6px 0 16px">${fmtAmt(sym,q.got)} ${sym} will appear in your wallet once the transaction is confirmed on ${NETS[net].n}.</p></div><div class="stat"><span>Charged</span><b class="num">${fmtUSD(q.v)}</b></div><div class="stat"><span>Status</span><b>${statusPill(t)}</b></div><div class="grid2" style="margin-top:18px"><button class="btn btn-ghost" id="vact">View activity</button><button class="btn btn-primary" id="done">Done</button></div>`;
+      $('#vact').onclick=()=>{closeModal();go('activity')};$('#done').onclick=()=>{closeModal();go('portfolio')}};
+    upd();
+  }else if(sellSym){
+    const am=$('#slamt'),s=sellSym;const upd=()=>{const a=parseFloat(am.value)||0,usd=a*P[s],fee=usd*0.01,nf=feeFor(s,'avg'),got=Math.max(0,usd-fee);
+      $('#sleq').textContent=`${s} · ≈ ${fmtUSD(usd)}`;
+      $('#slsum').innerHTML=`<div class="stat"><span>${s} price</span><b class="num">${fmtUSD(P[s])}</b></div><div class="stat"><span>Processing fee (1%)</span><b class="num">${fmtUSD(fee)}</b></div><div class="stat"><span>Network fee</span><b class="num">${fmtAmt(nf.sym,nf.amt,8)} ${nf.sym}</b></div><div class="stat" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><span>You receive</span><b class="num">${fmtUSD(got)}</b></div>`;
+      let err='';if(a>bal(s)+1e-12)err=`Insufficient ${s} balance.`;else if(a>0&&nf.amt>bal(nf.sym)-(nf.sym===s?a:0)+1e-12)err=`Not enough ${nf.sym} for the network fee.`;else if(a>0&&usd<20)err='Minimum sale is $20.00.';
+      $('#slerr').innerHTML=err?`<div class="err" style="margin:0">${err}</div>`:'';$('#slgo').disabled=!!err||!a;return{a,usd,fee,got,nf}};
+    am.oninput=()=>{am.value=am.value.replace(/[^\d.]/g,'').replace(/(\..*)\./g,'$1');upd()};
+    $$('[data-sq]').forEach(b=>b.onclick=()=>{const c=COIN[s];let v=bal(s)*+b.dataset.sq;if(+b.dataset.sq===1&&!c.std)v-=feeFor(s,'avg').amt*1.05;am.value=(Math.floor(Math.max(0,v)*10**c.dp)/10**c.dp).toString();upd()});
+    $('#ssym2').onchange=e=>{sellSym=e.target.value;go('buy')};
+    $('#slgo').onclick=()=>{const q=upd(),net=COIN[s].net;signFlow({title:`Sell ${s}`,net,successTitle:'Sale submitted',
+      rows:[['You sell',`${fmtAmt(s,q.a)} ${s}`],['You receive',fmtUSD(q.got)],['Payout to','Checking •••• 4821'],['Network fee',`${fmtAmt(q.nf.sym,q.nf.amt,8)} ${q.nf.sym}`]],
+      exec:()=>{debit(s,q.a);debit(q.nf.sym,q.nf.amt);return addTx({type:'sell',sym:s,amt:q.a,price:P[s],usd:q.got,provider:'Checking •••• 4821',from:addrFor(net),to:randAddr(net),fee:+q.nf.amt.toPrecision(4),feeSym:q.nf.sym,label:'Vaultex Pay'})}})};
+    upd();
+  }
+};
+
+/* ---- ACTIVITY ---- */
+R.activity=()=>{const F={all:'All',send:'Sent',receive:'Received',swap:'Swaps',buysell:'Buy / Sell',pending:'Pending'};
+  const list=S.tx.filter(t=>actFilter==='all'||(actFilter==='buysell'?(t.type==='buy'||t.type==='sell'):actFilter==='pending'?!t.done:t.type===actFilter));
+  return`<section class="card"><div class="card-h"><div class="filters">${Object.entries(F).map(([k,n])=>`<button data-act="filter" data-f="${k}" class="${k===actFilter?'on':''}">${n}</button>`).join('')}</div><button class="btn btn-ghost" style="padding:7px 13px" data-act="csv">Export CSV</button></div>${txList(list,false)}</section>`};
+
+/* ---- NFTs ---- */
+R.nfts=()=>`<div class="card-h"><div><h3 style="font-size:18px">NFTs</h3><div class="muted" style="font-size:13px;margin-top:2px">${S.nfts.length} items · Ethereum</div></div></div>
+  ${S.nfts.length?`<div class="nft-grid">${S.nfts.map((n,i)=>`<button class="nft" data-act="nft" data-i="${i}"><span class="art">${nftArt(n.seed,n.kind)}</span><div class="meta"><div style="font-weight:600">${esc(n.name)}</div><div class="row-between" style="margin-top:4px"><span class="muted" style="font-size:12px">${esc(n.col)}</span><span class="num" style="font-size:12px">Ξ ${n.floor}</span></div></div></button>`).join('')}</div>`:'<div class="card empty">No NFTs in this wallet yet.</div>'}`;
+
+/* ---- SETTINGS ---- */
+R.settings=()=>`<div style="display:grid;gap:18px;max-width:820px">
+  <section class="card"><div class="card-h"><h3>Wallet</h3></div>
+    <div class="set-row"><div style="display:flex;gap:14px;align-items:center;min-width:0">${avatar(user.address,48)}<div style="min-width:0"><div class="t">${esc(S.name)}</div><div class="d addr" style="word-break:break-all">0x${cksum(user.address)}</div></div></div><button class="btn btn-ghost" data-act="rename">Rename</button></div>
+    <div class="set-row"><div><div class="t">Wallet type</div><div class="d">Self-custody · Encrypted keystore (V3)</div></div><span class="pill ok">Non-custodial</span></div>
+    <div class="set-row"><div><div class="t">This device</div><div class="d">${/Win/i.test(navigator.platform||'')?'Windows':'Desktop'} · Vaultex Wallet 2.14.3</div></div></div>
+  </section>
+  <section class="card"><div class="card-h"><h3>Addresses</h3></div>
+    ${Object.keys(NETS).map(n=>{const a=addrFor(n);return`<div class="set-row"><div style="min-width:0"><div class="t">${NETS[n].n}</div><div class="d addr" style="word-break:break-all">${a}</div></div><button class="btn btn-ghost" style="padding:7px 12px" data-act="copyaddr" data-a="${a}">${I.copy}</button></div>`}).join('')}
+  </section>
+  <section class="card"><div class="card-h"><h3>Security &amp; privacy</h3></div>
+    <div class="set-row"><div><div class="t">Export private key</div><div class="d">Reveal the private key for this wallet. Anyone with it has full control of your funds.</div></div><button class="btn btn-ghost" data-act="pk">Reveal</button></div>
+    <div class="set-row"><div><div class="t">Download keystore backup</div><div class="d">Save an encrypted copy of your keystore file.</div></div><button class="btn btn-ghost" data-act="backup">Download</button></div>
+    <div class="set-row"><div><div class="t">Auto-lock timer</div><div class="d">Lock the wallet after a period of inactivity</div></div><select class="sel sm" id="alk">${[5,15,30,60].map(m=>`<option value="${m}" ${S.autolock===m?'selected':''}>${m} minutes</option>`).join('')}</select></div>
+    <div class="set-row"><div><div class="t">Hide balances</div><div class="d">Blur amounts across the app</div></div><button class="toggle ${hideBal?'on':''}" data-act="hide"></button></div>
+  </section>
+  <section class="card"><div class="card-h"><h3>Networks</h3></div>
+    ${Object.values(NETS).map((n,i)=>`<div class="set-row" style="padding:11px 0"><div style="display:flex;gap:10px;align-items:center"><span class="ci sm" style="background:${n.col}">${n.g}</span><span style="font-weight:500">${n.n}</span></div><span class="muted" style="font-size:12.5px;display:flex;gap:8px;align-items:center"><span class="dot"></span>Connected · ${30+((i*37)%90)} ms</span></div>`).join('')}
+  </section>
+  <section class="card"><div class="card-h"><h3>About &amp; </h3></div>
+    <div class="set-row"><div><div class="t">Vaultex Wallet for Desktop</div><div class="d">Version 2.14.3 (build 8812) · Windows x64</div></div><button class="btn btn-ghost" data-act="update">Check for updates</button></div>
+    <div class="set-row"><div><div class="t">See your balances</div><div class="d">Balances and history for this wallet.</div></div><button class="btn btn-ghost" data-act="reset" style="color:#ff7a82">Reset</button></div>
+  </section></div>`;
+A.settings=()=>{$('#alk').onchange=e=>{S.autolock=+e.target.value;save();bumpIdle();toast('Auto-lock updated',`Wallet will lock after ${S.autolock} minutes.`,'i')}};
+
+/* ================= actions ================= */
+const ACT={
+  hide(){hideBal=!hideBal;lsSet('vx_hide',hideBal);$('#app').classList.toggle('hide-bal',hideBal);$('#hideb').innerHTML=hideBal?I.eyeoff:I.eye;if(view==='settings')go('settings')},
+  range(b){range=b.dataset.r;$$('[data-act=range]').forEach(x=>x.classList.toggle('on',x===b));const c=charts[0];if(c){c.opts=chartOpts(range,{base:true,sens:true});c.draw()}updPortChg()},
+  arange(b){aRange=b.dataset.r;$$('[data-act=arange]').forEach(x=>x.classList.toggle('on',x===b));const c=charts[0];if(c){c.opts=chartOpts(aRange);c.draw()}},
+  assetgo(b){const s=vparam,v=b.dataset.v;if(v==='send'){if(!bal(s))return toast('Nothing to send',`Your ${s} balance is 0.`,'e');sendSt.sym=s;sendSt.to='';sendSt.amt=''}if(v==='receive')recvSym=s;if(v==='swap'){if(bal(s))swapSt.from=s;else swapSt.to=s}if(v==='buy'){bsMode='buy';buySym=s}go(v)},
+  copyaddr(b){copy(b.dataset.a,'Address')},
+  bsm(b){bsMode=b.dataset.m;go('buy')},
+  filter(b){actFilter=b.dataset.f;go('activity')},
+  tx(b){const t=S.tx.find(x=>x.hash===b.dataset.h);if(t)txDetail(t)},
+  lock(){lockWallet();toast('Wallet locked','Enter your password to unlock.','i')},
+  forget(){openModal(`<h3>Remove wallet from this device?</h3><p class="muted" style="margin:8px 0 16px;line-height:1.55">Your funds stay on the blockchain. You’ll need your keystore file and password to import this wallet again.</p><div class="grid2"><button class="btn btn-ghost" data-x>Cancel</button><button class="btn btn-red" id="fgo">Remove</button></div>`);$('#fgo').onclick=forget},
+  rename(){openModal(`<button class="x" data-x>×</button><h3>Rename wallet</h3><input class="input" id="rnm" maxlength="24" value="${esc(S.name)}" style="margin:14px 0"><button class="btn btn-primary btn-block" id="rgo">Save</button>`);$('#rnm').select();$('#rgo').onclick=()=>{const v=$('#rnm').value.trim();if(v){S.name=v;save();closeModal();renderApp()}}},
+  pk(){const o=openModal(`<button class="x" data-x>×</button><h3>Export private key</h3><div class="warnbox" style="margin-top:12px">Never share your private key. Anyone with it can take all assets in this wallet. Vaultex support will never ask for it.</div><div class="field"><label>Wallet password</label><div class="input-wrap"><input class="input" id="pkpw" type="password" placeholder="Enter your password"><button type="button" class="eye" data-eye>${I.eye}</button></div></div><div id="pkerr"></div><button class="btn btn-primary btn-block" id="pkgo">Reveal private key</button>`);
+    $('#pkpw').focus();$('#pkgo').onclick=()=>{if(!verifyPw(user,$('#pkpw').value)){$('#pkerr').innerHTML='<div class="err">Incorrect password.</div>';return}const pk=sha256(user.salt+user.ct+user.address);
+      $('.modal',o).innerHTML=`<button class="x" data-x>×</button><h3>Your private key</h3><p class="muted" style="margin:6px 0 14px">Click to reveal. Keep it offline and secret.</p><div class="pk" id="pkv">${pk}</div><div class="grid2" style="margin-top:14px"><button class="btn btn-ghost" id="pkc">${I.copy} Copy</button><button class="btn btn-primary" data-x>Done</button></div>`;
+      bindModal(o);$('#pkv').onclick=e=>e.currentTarget.classList.toggle('show');$('#pkc').onclick=()=>copy(pk,'Private key')}},
+  backup(){const k={version:3,id:[rhex(4),rhex(2),'4'+rhex(2).slice(1),rhex(2),rhex(6)].join('-'),address:user.address,crypto:{ciphertext:user.ct,cipherparams:{iv:rhex(16)},cipher:'aes-128-ctr',kdf:'scrypt',kdfparams:{dklen:32,salt:user.salt,n:262144,r:8,p:1},mac:user.mac}};
+    const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(k)],{type:'application/json'}));l.download=`UTC--${new Date().toISOString().replace(/:/g,'-')}--${user.address}.json`;l.click();toast('Backup downloaded','Store it somewhere safe and offline.')},
+  update(b){b.disabled=true;b.innerHTML='<span class="spin"></span>Checking';setTimeout(()=>{b.disabled=false;b.textContent='Check for updates';toast('You’re up to date','Vaultex 2.14.3 is the latest version.','i')},1400)},
+  nft(b){const n=S.nfts[+b.dataset.i];openModal(`<button class="x" data-x>×</button><div class="nft-big" style="border-radius:14px;overflow:hidden;margin:28px 0 16px;aspect-ratio:1">${nftArt(n.seed,n.kind)}</div><h3>${esc(n.name)}</h3><div class="muted">${esc(n.col)}</div><div style="margin-top:12px"><div class="stat"><span>Floor price</span><b>Ξ ${n.floor} <span class="muted">(${fmtUSD(n.floor*P.ETH)})</span></b></div><div class="stat"><span>Token ID</span><b>${n.id}</b></div><div class="stat"><span>Standard</span><b>ERC-721</b></div><div class="stat"><span>Contract</span><b class="addr">${short(n.contract,8,6)}</b></div><div class="stat"><span>Network</span><b>Ethereum</b></div></div>`)},
+  csv(){const rows=[['Date','Type','Asset','Amount','To asset','To amount','Network','Fee','Fee asset','Status','Hash']].concat(S.tx.map(t=>[new Date(t.ts).toISOString(),t.type,t.sym,t.amt,t.toSym||'',t.toAmt||'',NETS[t.net].n,t.fee||'',t.feeSym||'',confInfo(t).done?'Confirmed':'Pending',t.hash]));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download='vaultex-transactions.csv';a.click();toast('Export ready','Your transaction history was downloaded.')},
+  reset(){openModal(`<h3>Reset wallet?</h3><p class="muted" style="margin:8px 0 18px">Balances and history will return to their original state.</p><div class="grid2"><button class="btn btn-ghost" data-x>Cancel</button><button class="btn btn-red" id="rcf">Reset</button></div>`);$('#rcf').onclick=()=>{S=user.demo?demoState():blankState(S.name);save();closeModal();view='portfolio';renderApp();toast('Wallet reset','Balances restored.')}},
+};
+
+/* ================= live loop ================= */
+const lastP={};
+function liveDom(){
+  $$('[data-price]').forEach(el=>{const s=el.dataset.price,nv=fmtUSD(P[s]);if(el.textContent!==nv){if(lastP[s]!=null&&el.textContent){el.classList.remove('flash-up','flash-down');void el.offsetWidth;el.classList.add(P[s]>=lastP[s]?'flash-up':'flash-down')}el.textContent=nv}});
+  $$('[data-chg]').forEach(el=>{const v=CHG[el.dataset.chg];el.textContent=fmtPct(v);el.classList.toggle('up',v>=0);el.classList.toggle('down',v<0)});
+  if(!user)return;
+  $$('[data-hv]').forEach(el=>el.textContent=fmtUSD(holdVal(el.dataset.hv)));
+  const tb=$('#totalBal');if(tb)tb.textContent=fmtUSD(total());
+  charts.forEach(c=>c.draw&&c.draw());updPortChg();
+  if(view==='send'&&!$('#ov'))updSend();
+}
+function tickConf(){
+  if(!user||!S)return;let changed=false;
+  S.tx.forEach(t=>{if(t.done)return;const c=confInfo(t);
+    $$(`[data-conf="${t.hash}"]`).forEach(el=>{el.outerHTML=statusPill(t)});
+    $$(`[data-confn="${t.hash}"]`).forEach(el=>el.textContent=`${c.c} / ${c.n}`);
+    if(c.done){t.done=true;changed=true;
+      if(t.type==='buy'){S.holdings[t.sym]=bal(t.sym)+t.amt;notify(`Received ${t.sym}`,`${fmtAmt(t.sym,t.amt)} ${t.sym} from your purchase has arrived.`);toast(`${t.sym} received`,`${fmtAmt(t.sym,t.amt)} ${t.sym} is now in your wallet.`)}
+      else if(t.type==='swap'){S.holdings[t.toSym]=bal(t.toSym)+t.toAmt;notify('Swap completed',`${fmtAmt(t.sym,t.amt)} ${t.sym} → ${fmtAmt(t.toSym,t.toAmt)} ${t.toSym}`);toast('Swap completed',`Received ${fmtAmt(t.toSym,t.toAmt)} ${t.toSym}.`)}
+      else if(t.type==='sell'){notify('Payout initiated',`${fmtUSD(t.usd)} is on its way to Checking •••• 4821.`);toast('Sale confirmed',`${fmtUSD(t.usd)} payout initiated.`)}
+      else{notify('Transaction confirmed',`Sent ${fmtAmt(t.sym,t.amt)} ${t.sym} on ${NETS[t.net].n}.`);toast('Transaction confirmed',`${fmtAmt(t.sym,t.amt)} ${t.sym} sent successfully.`)}}});
+  if(changed){save();updNavCount();if(!$('#ov')&&['portfolio','activity','asset'].includes(view))go(view,vparam)}
+  const pv=$('#pendv');if(pv)pv.textContent=pendingCount();
+}
+setInterval(tickConf,1000);
+setInterval(()=>{COINS.forEach(c=>lastP[c.s]=P[c.s]);walk();liveDom()},3000);
+setInterval(fetchLive,60000);
+
+/* ================= boot ================= */
+(async function boot(){
+  updStatus();
+  const sess=ssGet('vx_session');
+  if(sess){
+    if(SB_ON){
+      $('#root').innerHTML=`<div class="lock"><div class="auth-card" style="text-align:center"><div class="big-spin"></div><h2 style="font-size:20px">Connecting to Vaultex</h2><p class="sub">Loading your wallet from the cloud…</p></div></div>`;
+      let row;try{row=await dbGetWallet(sess)}catch(e){row=undefined}
+      if(row&&row.keystore)renderLock(accFromKeystore(row.keystore,row.state));
+      else{const cached=lsGet('vx2_cache_'+sess);if(cached&&cached.keystore)renderLock(accFromKeystore(cached.keystore,cached.state),row===undefined?'Working offline — changes will sync when you reconnect.':undefined);else renderAuth('welcome')}
+    }else{const cached=lsGet('vx2_cache_'+sess);if(cached&&cached.keystore)renderLock(accFromKeystore(cached.keystore,cached.state));else renderAuth('welcome')}
+  }else renderAuth('welcome');
+  await fetchLive();liveDom();
+})();
+</script>
+</body>
+</html>
